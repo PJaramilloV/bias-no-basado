@@ -206,7 +206,7 @@
 
 ## days_b_screening_arrest  ----------------------------------------------------
 
-# resta en dias: compas_screening_date - c_jail_in
+# resta en dias: c_jail_in - compas_screening_date
 
 
 ## c_days_from_compas ----------------------------------------------------------
