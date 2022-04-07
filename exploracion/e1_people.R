@@ -139,12 +139,3 @@ people %>%
 #     
 
 
-# pregunta:
-#     
-# insight:
-#     
-
-# pregunta:
-#     
-# insight:
-#     

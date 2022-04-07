@@ -38,11 +38,11 @@
 # charge_degree es el tipo y grado de la ofensa criminal
 # 
 # 0      = Infraction   
-# CT     = Infraction ?(Contempt to Court / failing to appear to summons)
+# CT     = Infraction  (Contempt to Court / failing to appear to summons)
 # CO3    = Infraction  (Mal comportamiento, loitering, literring, sleeping)
 # M | MO = Misdemeanor
 # F      = Felony
-# NIO    = Infraction ?
+# NI0    = Infraction  (relacionadas con el parque nacional / actividad acuatica / tabaco, idv menor a 18 / botar basura)
 # TC4    = Misdemeanor (DUI / DWAI) Felony_4 if charge 4 or 5
 # TCX    = Misdemeanor (Drive no license / Reckless Drive / License revoked/ License Expired)
 # X      = No info
