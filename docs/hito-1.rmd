@@ -1,0 +1,37 @@
+---
+title: 'Hito 1'
+author: "Vicente González, Rodrigo Iturrieta,  Pablo Jaramillo, Cristian Lillo y Benjamín Valenzuela"
+date: "Abril 2022"
+output: 
+  html_document: 
+    theme: default
+    toc: yes
+---
+
+# Introducción
+
+## Motivación
+
+Nuestra motivación esta basada en las últimas movilizaciones sociales de #blacklivematter en estados unidos, sumado a la creencia popular nacional de que existe una discriminacion de parte de las fuerzas de orden público con respecto a los ingresos de la persona (clase social).
+
+## Problemática
+
+Evidenciar la existencia de una discriminación de parte de la policía americana, bajo los siguientes criterios:
+
+1.  Raza / Etnia
+
+2.  Género
+
+3.  Grupo etareo
+
+4.  Ingresos
+
+La idea central es usar un modelo predicitivo basado en esta base de datos, con el cual se pueda predecir estas distintas ''clasificaciones''
+
+# Exploración de datos
+
+# Preguntas y Problemas
+
+# Contribuciones
+
+## Problematica
