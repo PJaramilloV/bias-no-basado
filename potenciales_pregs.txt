@@ -1,0 +1,3 @@
+
+es el ceszgo racial de COMPAS un problema de datos 
+de entrenamiento o fue este implementado?
