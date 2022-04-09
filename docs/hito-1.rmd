@@ -19,19 +19,26 @@ Uno de estos movimientos es el de Black Lives Matter, donde la población afroam
 
 La motivación del equipo nace a raíz de estas problemáticas, donde, además, desde un punto de vista de *data mining*, salta a la vista la pregunta: ¿Se puede hacer un modelo que consiga evidenciar la discriminación en una base de datos?
 
-Particularmente, para abarcar esta problemática, se decidió dar enfoque al caso de estudio de COMPAS. En el cual se encontró que el modelo predictivo **COMPAS** (Correctional Offender Management Profiling for Alternative Sanctions) otorgaba una evaluación de riesgo mayor a personas afroamericanas que al resto. Es decir, que el modelo "discriminaba" a ciertos grupos de personas basadas en su etnia, marcándolas como potencialmente más propensos a cometer un crimen.
+Particularmente, para abarcar esta problemática, se decidió dar enfoque al caso de estudio de COMPAS. En este, se encontró que el modelo predictivo **COMPAS** (Correctional Offender Management Profiling for Alternative Sanctions) otorgaba una evaluación de riesgo mayor a personas afroamericanas que al resto. Es decir, que el modelo "discriminaba" a ciertos grupos de personas basadas en su etnia, marcándolas como potencialmente más propensos a cometer un crimen.
 
 La idea central del proyecto es poder construir un modelo a partir de los datos de COMPAS, para poder evaluar la discriminación en la base de datos. Identificando, además
 
 # Exploración de datos
 
 ## Acercamiento inicial
-Primero cargamos los datos desde la base de datos de [COMPAS](https://github.com/propublica/compas-analysis).
-La tabla **summary** no presenta datos útiles para la exploración de datos, por lo que se ha omitido.
+Primero cargamos los datos desde la base de datos de [COMPAS](https://github.com/propublica/compas-analysis). Esta contiene 7 tablas:
+1. `casearrest`: Observaciones sobre los cargos de arrestos de forma sucinta y sin detalles sobre el cargo.
+2. `charge`: Observaciones de cargos criminales/infracciones en detalle, la diferencia entre esta y la tabla "casearrest" es que en esta los cargos no se agrupan.
+3. `compas`: Observaciones de evaluaciones de un cierto tipo de métrica de COMPAS.
+4. `jailhistory`: Observaciones sobre el periodo carcelario de cada persona enviada a cárcel por el crimen que llevó a cabo el análisis de COMPAS. Solo se consideran periodos que tienen fin, las sentencias que continuaron después de la fecha de rescate de los datos están omitidos.
+5. `people`: Cada observación es un resumen personal del historial de COMPAS del individuo. Notando nombre, edad, genero, etnia, crimen que llevó al análisis de COMPAS y en caso de existir, el crimen reincidente (o segundo crimen).
+6. `prisonhistory`:	Similar a la tabla de `jailhistory` pero es de datos que involucran periodo de prisión en lugar de cárcel.
+7. `summary`: Esta no presenta datos útiles para la exploración de datos, por lo que se ha omitido.
 
 ```{r message = FALSE, warning = FALSE}
 # Script para cargar data al workspace
 
+# Descomentar estas dos líneas para instalar los paquete
 # install.packages("RSQLite")
 # install.packages("here")
 library(RSQLite)
@@ -47,10 +54,8 @@ setwd(here())
 # getwd() # Verificar que se estableció correctamente
 
 # Cargar BD, la cual contiene 7 tablas:
-#         casearrest      charge          compas      jailhistory
-#         people          prisonhistory   summary
 db <- dbConnect(dbDriver("SQLite"), dbname = "compas.db")
-dbListTables(db)
+# dbListTables(db)
 
 #   tabla     |           linea de carga          | dimensiones[fila,columna]
 casearrest    <- dbReadTable(db, "casearrest")    # [128183,  8]
@@ -59,7 +64,7 @@ compas        <- dbReadTable(db, "compas")        # [37578,  21]
 jailhistory   <- dbReadTable(db, "jailhistory")   # [22111,   7]
 people        <- dbReadTable(db, "people")        # [11757,  41]
 prisonhistory <- dbReadTable(db, "prisonhistory") # [4945,    9]
-summary       <- dbReadTable(db, "summary")       # [0,      26] #whatWea
+summary       <- dbReadTable(db, "summary")       # [0,      26] # no data
 
 dbDisconnect(db)
 rm(db)
@@ -182,7 +187,7 @@ people %>%
     geom_bar(position = position_dodge(width=0.5)) +
     labs(title="Number of re-offencers by decile score",
          x="decile score", y="Count") + 
-    scale_fill_discrete(name = "re-offender?") 
+    scale_fill_discrete(name = "re-offender?")
 ```
 
 Consideraremos solamente a afroamericanos, asiáticos, nativos americanos y otros.
@@ -210,6 +215,8 @@ people %>%
   scale_fill_discrete(name = "re-offender?")
 ```
 
+
+
 ```{r}
 # pregunta:
 #     como se distribuyen la cantidad de crímenes posterior al original?
@@ -230,13 +237,9 @@ people %>%
     scale_color_discrete(name = "violent individual?") 
 ```
 
+Los gráficos que comparan a la gente arrestada con y sin cargo, agrupados por su raza, nos muestra una tendencia similar en ambos gráficos. Los afroamericanos son los más arrestados en ambos casos y con una menor diferencia respecto a los caucásicos cuando existe un cargo para arrestarlos.
+
 ```{r}
-# pregunta:
-#     se arresta sin motivo a los afro-americanos mas que al resto de la gente?
-# insight:
-#     relativamente hablando: si, se puede ver que las cantidades de arrestos sin
-#     razon dada para las razas no afroamericanas son menores que las mismas para
-#     arrestos con razon dada al usar a los afroamericanos como referencia
 people %>%
   filter(!(is.na(c_charge_desc))) %>%
   group_by(race) %>%
@@ -253,15 +256,9 @@ people %>%
 
 ```
 
+Las proporciones se mantienen constantes entre los gráficos de las personas que son castigadas con cárcel y prisión, comparados con las que no.
+
 ```{r}
-# pregunta:
-#     De la gente que no fue a prision o carcel, como se distribuyen?
-# insight:
-#     Las proporciones se mantienen +- constantes en relatividad entre ellas 
-#    (salvo a los hispanicos, se les sentencia menos a ellos)
-#     Notar: al parecer si te analiza COMPAS tienes una probabilidad de ~94.5%
-#             de ser sentenciado a carcel o prision.
-#             (91.5% si eres hispanico)
 people_partial_id %>%
   group_by(race) %>%
   mutate(count = n()) %>%
@@ -361,7 +358,9 @@ Dado el análisis realizado, se formularon las siguientes preguntas:
 
 -   ¿Es posible predecir el valor `raw_data` de la tabla `compas` de una persona en función de su edad, género y/o etnia?
 
-Esta es la pregunta principal del proyecto, ya que si es posible crear un modelo que nos permita predecir la puntuación que COMPAS le dio a una persona, basándonos exclusivamente en la edad, género y etnia de esta. Entonces se podría concluir que efectivamente
+Esta es la pregunta principal del proyecto, ya que si es posible crear un modelo que nos permita predecir la puntuación que COMPAS le dio a una persona, basándonos exclusivamente en la edad, género y etnia de esta. Entonces se podría concluir que efectivamente existe una discriminación de parte COMPAS, puesto que existe una relación lo suficientemente evidente como para que un modelo pueda predecir la puntuación que le dio a una persona.
+
+
 
 # Contribuciones
 
