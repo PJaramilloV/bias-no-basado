@@ -27,8 +27,9 @@ La idea central del proyecto es poder construir un modelo a partir de los datos 
 
 ### Acercamiento inicial
 Primero cargamos los datos desde la base de datos de [COMPAS](https://github.com/propublica/compas-analysis). Esta contiene 7 tablas:
+
 1. `casearrest`: Observaciones sobre los cargos de arrestos de forma sucinta y sin detalles sobre el cargo.
-2. `charge`: Observaciones de cargos criminales/infracciones en detalle, la diferencia entre esta y la tabla "casearrest" es que en esta los cargos no se agrupan.
+2. `charge`: Observaciones de cargos criminales/infracciones en detalle, la diferencia entre esta y la tabla `casearrest` es que en esta los cargos no se agrupan.
 3. `compas`: Observaciones de evaluaciones de un cierto tipo de métrica de COMPAS.
 4. `jailhistory`: Observaciones sobre el periodo carcelario de cada persona enviada a cárcel por el crimen que llevó a cabo el análisis de COMPAS. Solo se consideran periodos que tienen fin, las sentencias que continuaron después de la fecha de rescate de los datos están omitidos.
 5. `people`: Cada observación es un resumen personal del historial de COMPAS del individuo. Notando nombre, edad, genero, etnia, crimen que llevó al análisis de COMPAS y en caso de existir, el crimen reincidente (o segundo crimen).
