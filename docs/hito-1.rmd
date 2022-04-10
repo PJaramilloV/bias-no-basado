@@ -11,7 +11,7 @@ output:
     toc: yes
 ---
 
-# Introducción
+## Introducción
 
 Durante la última década, la sociedad moderna ha estado expuesta a un periodo de disconformidad y crisis. Múltiples protestas han ocurrido a lo largo del mundo, donde se evidencian malestares en temas de discriminación, igualdad y justicia.
 
@@ -21,11 +21,11 @@ La motivación del equipo nace a raíz de estas problemáticas, donde, además, 
 
 Particularmente, para abarcar esta problemática, se decidió dar enfoque al caso de estudio de COMPAS. En este, se encontró que el modelo predictivo **COMPAS** (Correctional Offender Management Profiling for Alternative Sanctions) otorgaba una evaluación de riesgo mayor a personas afroamericanas que al resto. Es decir, que el modelo "discriminaba" a ciertos grupos de personas basadas en su etnia, marcándolas como potencialmente más propensos a cometer un crimen.
 
-La idea central del proyecto es poder construir un modelo a partir de los datos de COMPAS, para poder evaluar la discriminación en la base de datos. Identificando, además
+La idea central del proyecto es poder construir un modelo a partir de los datos de COMPAS, para poder evaluar la discriminación en la base de datos. Identificando, además los parámetros bajo los cuales COMPAS hace la discriminación.
 
-# Exploración de datos
+## Exploración de datos
 
-## Acercamiento inicial
+### Acercamiento inicial
 Primero cargamos los datos desde la base de datos de [COMPAS](https://github.com/propublica/compas-analysis). Esta contiene 7 tablas:
 1. `casearrest`: Observaciones sobre los cargos de arrestos de forma sucinta y sin detalles sobre el cargo.
 2. `charge`: Observaciones de cargos criminales/infracciones en detalle, la diferencia entre esta y la tabla "casearrest" es que en esta los cargos no se agrupan.
@@ -92,9 +92,9 @@ people %>%
                  cantidad_decile_10 = sum(decile_score == 10))
 ```
 
-## Análisis centrado en la tabla **people**
+### Análisis centrado en la tabla **people**
 
-### Estructuras de datos
+#### Estructuras de datos
 
 Se cruza la información de las tablas de historia carcelaria (jail) e historia penal (prison) para enlazar los id de las personas con su nombre completo y su fecha de nacimiento.
 
@@ -124,7 +124,7 @@ people_partial_id <- people %>%
 people_not_sentenced <- people_partial_id %>% filter(is.na(person_id))
 ```
 
-### Gráficos
+#### Gráficos
 
 Nuestra primera pregunta a responder con esta tabla es: ¿Cómo se atribuyen las personas por decil según sexo?
 
@@ -303,9 +303,9 @@ people %>%
          x="Decile", y="Age")
 ```
 
-## Análisis centrado en la tabla **charge**
+### Análisis centrado en la tabla **charge**
 
-### Estructuras de datos
+#### Estructuras de datos
 
 ```{r}
 # Lista de cargos sospechosos compilada a mano
@@ -329,7 +329,7 @@ people_charge <- charge %>%
                   distinct()
 ```
 
-### Gráficos
+#### Gráficos
 
 ```{r}
 # pregunta:
@@ -352,7 +352,7 @@ people_charge %>%
     theme(legend.position = "none", axis.text.x = element_text(angle=15, vjust=0.9, hjust=0.55))
 ```
 
-# Preguntas y Problemas
+## Preguntas y Problemas
 
 Dado el análisis realizado, se formularon las siguientes preguntas:
 
@@ -362,7 +362,7 @@ Esta es la pregunta principal del proyecto, ya que si es posible crear un modelo
 
 
 
-# Contribuciones
+## Contribuciones
 
 -   Vicente González: Ayudo a redactar el informe y escribió el guión de la presentación.
 -   Rodrigo Iturrieta: Realizo el material de apoyo para la presentación, así como la edición de la misma.
