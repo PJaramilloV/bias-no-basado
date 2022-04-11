@@ -53,6 +53,7 @@ Siguiendo con esto, podemos ver ahora como se distribuyen las edades de los crim
 Para terminar con el análisis podemos tomar la tabla charge, y analizar los cargos menores o sin detalles según la etnia, donde vemos que existe una ligera diferencia en comparación con los otros cargos, en particular, la razón entre la cantidad de afro-americanos y caucásicos para los cargos menores es de un 60 y 20% del total, respectivamente, mientras que para los cargos más serios es de un 60 y 30%.
 
 ## Preguntas y Problemas
+
 Una vez dicho esto, habiendo analizado los parámetros más importantes de la base de datos, saltan a la mente unas cuantas preguntas, yendo por partes:
 
 - ¿Por qué la distribución de los afro-americanos es tan uniforme?
@@ -61,22 +62,22 @@ Resulta intrigante ver que COMPAS otorga una puntuación casi perfectamente dist
 
 - ¿Los afro-americanos son más propensos a volver a cometer un crimen?
 
-Tal vez no es que la modelo sea racista, quizás como existe una relación tan particular podríamos obtener resultados similares a los de COMPAS usando la reincidencia en vez de la etnia de la persona, si este es el caso, realmente sería complejo hablar de que el modelo es racista, puesto que es consecuencia de otro parámetro.
+Tal vez no es que la modelo sea racista, quizás como existe una relación tan particular podríamos obtener resultados similares a los de COMPAS usando la reincidencia en vez de la etnia de la persona, si este es el caso, realmente sería complejo hablar de que el modelo es racista, puesto que es consecuencia de otro parámetro. Con lo cual podríamos centrarnos en encontrar otro grupo que posea la misma curva de reincidencia.
 
 - La importancia de la edad
 
-Algo que pasa desapercibido a primera vista, es que tanto importa la edad a la hora de hacer estos análisis de crímenes, como vimos, la mayoría de criminales afro-americanos tiene una menor edad con respecto a las otras etnias. A su vez, los deciles más altos del puntaje de COMPAS, también corresponden con gente más joven. Es posible hacer lo mismo que lo anterior pero con la edad: reemplazar la etnia y ver los resultados.
+Algo que pasa desapercibido a primera vista, es que tanto importa la edad a la hora de hacer estos análisis de crímenes, como vimos, la mayoría de criminales afro-americanos tiene una menor edad con respecto a las otras etnias. A su vez, los deciles más altos del puntaje de COMPAS, también corresponden con gente más joven. Es posible hacer lo mismo que lo anterior pero con la edad: reemplazar la etnia y ver los resultados. Mientras más relaciones podemos hacer de peso entre variables no relacionadas con la etnia y el puntaje de COMPAS, tendremos más formas de poder abarcar la problemática.
 
 - Género e ingresos
 
-Algo que no hemos profundizado mucho en esta primera etapa, es el análisis a través del sexo del sujeto. Es algo a tener en cuenta para poder ver si sólo ocurre discriminación a nivel étnico o también existe a nivel de género. Ahora sólo alcanzamos a ver una pincelada de esto y el análisis mostró que podría existir. Adicionalmente, notamos que esta base de datos no contiene en nivel socio-económico del sujeto, asi como el nivel educativo, sería un esfuerzo mayor poder cruzar otra base de datos para obtener estos datos, pero de poder lograrlo se conseguiría un mayor entendimiento.
+Algo que no hemos profundizado mucho en esta primera etapa, es el análisis a través del sexo del sujeto. Es algo a tener en cuenta para poder ver si sólo ocurre discriminación a nivel étnico o también existe a nivel de género. Ahora sólo alcanzamos a ver una pincelada de esto y el análisis mostró que podría existir. Adicionalmente, notamos que esta base de datos no contiene en nivel socio-económico del sujeto, asi como el nivel educativo, sería un esfuerzo mayor poder cruzar otra base de datos para obtener estos datos, pero de poder lograrlo se conseguiría un mayor entendimiento. 
 
 ## Conclusión
 
-Queda claro el camino a seguir para nosotros, debemos enfocarnos en entender mejor como se otorgo el puntaje en base a antecedentes únicamente criminales, asi como ver como se distribuyen estos antecedentes con respecto a la edad, el sexo, la etnia e incluso los ingresos.
+Queda claro el camino a seguir para nosotros, debemos enfocarnos en entender mejor como se otorgo el puntaje en base a aspectos únicamente criminales, para asi ver como se distribuyen estos antecedentes con respecto a la edad, el sexo, la etnia e incluso, si es posible, los ingresos. 
 
-Falta, entonces, definir un marco teórico bajo el cual poder clasificar la importancia de la edad, sexo y etnia en términos criminales, para poder encontrar una forma de diseñar un modelo que no discrimine, si es que esto es siquiera posible.
+Por lo que, la idea es analizar si es que se puede omitir la etnia y obtener resultados similares, o en caso contrario, enmascarar las la variable. Es decir, poder sacar de la variable etnia, otras etiquetas que estén bajo menos prejuicios, aunque esto podría verse como poco ético.
 
-Finalmente, es importante notar que, a pesar de que hablamos de un modelo discriminatorio, la verdad es que un modelo toma las etiquetas para precisamente crear nuevas etiquetas. El tema de fondo es que los propios datos que son usados para entrenar al modelo están contaminados por una cultura y sociedad que categoriza y prejuicia a las personas. Como analistas de datos a priori lo único que podemos hacer es omitir o esconder dicho prejuicio del modelo, por lo menos hasta que la situación se normalize. Al final, parte de la gracia de los modelos más avanzados de machine learning, es que estos son capaces de identificar causalidad en datos que no parecen estar relacionados.
+Finalmente, es importante notar que, a pesar de que hablamos de un modelo discriminatorio, la verdad es que un modelo toma las etiquetas para precisamente crear nuevas etiquetas. El tema de fondo es que los propios datos que son usados para entrenar al modelo están contaminados por una cultura y sociedad que categoriza y prejuicia a las personas. Como analistas de datos a priori lo único que podemos hacer es omitir o esconder dicho prejuicio del modelo, por lo menos hasta que la situación se normalize. Al final, parte de la gracia de los modelos más avanzados de predicción, es decir, los de machine learning, es que estos son capaces de identificar correlaciones entre datos que no aparentan estar relacionados.
 
 Con esto concluye nuestra presentación, gracias por su atención
