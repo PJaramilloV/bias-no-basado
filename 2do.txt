@@ -1,0 +1,7 @@
+Se necesita un modelo para ver si es posible predecir el decil sin usar etnia, sexo o edad.
+
+^^^^
+ver comportamiento de deciles respecto a aspectos criminales,´
+--> hacer modelo para calcular deciles, ignorando nombre, etnia, sexo, edad
+
+una vez hecho el modelo, ver como estos se relacionan con sexo, edad y etnia.
