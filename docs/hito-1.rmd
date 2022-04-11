@@ -26,15 +26,16 @@ La idea central del proyecto es poder construir un modelo a partir de los datos 
 ## Exploración de datos
 
 ### Acercamiento inicial
+
 Primero cargamos los datos desde la base de datos de [COMPAS](https://github.com/propublica/compas-analysis). Esta contiene 7 tablas:
 
-1. `casearrest`: Observaciones sobre los cargos de arrestos de forma sucinta y sin detalles sobre el cargo.
-2. `charge`: Observaciones de cargos criminales/infracciones en detalle, la diferencia entre esta y la tabla `casearrest` es que en esta los cargos no se agrupan.
-3. `compas`: Observaciones de evaluaciones de un cierto tipo de métrica de COMPAS.
-4. `jailhistory`: Observaciones sobre el periodo carcelario de cada persona enviada a cárcel por el crimen que llevó a cabo el análisis de COMPAS. Solo se consideran periodos que tienen fin, las sentencias que continuaron después de la fecha de rescate de los datos están omitidos.
-5. `people`: Cada observación es un resumen personal del historial de COMPAS del individuo. Notando nombre, edad, genero, etnia, crimen que llevó al análisis de COMPAS y en caso de existir, el crimen reincidente (o segundo crimen).
-6. `prisonhistory`:	Similar a la tabla de `jailhistory` pero es de datos que involucran periodo de prisión en lugar de cárcel.
-7. `summary`: Esta no presenta datos útiles para la exploración de datos, por lo que se ha omitido.
+1.  `casearrest`: Observaciones sobre los cargos de arrestos de forma sucinta y sin detalles sobre el cargo.
+2.  `charge`: Observaciones de cargos criminales/infracciones en detalle, la diferencia entre esta y la tabla `casearrest` es que en esta los cargos no se agrupan.
+3.  `compas`: Observaciones de evaluaciones de un cierto tipo de métrica de COMPAS.
+4.  `jailhistory`: Observaciones sobre el periodo carcelario de cada persona enviada a cárcel por el crimen que llevó a cabo el análisis de COMPAS. Solo se consideran periodos que tienen fin, las sentencias que continuaron después de la fecha de rescate de los datos están omitidos.
+5.  `people`: Cada observación es un resumen personal del historial de COMPAS del individuo. Notando nombre, edad, genero, etnia, crimen que llevó al análisis de COMPAS y en caso de existir, el crimen reincidente (o segundo crimen).
+6.  `prisonhistory`: Similar a la tabla de `jailhistory` pero es de datos que involucran periodo de prisión en lugar de cárcel.
+7.  `summary`: Esta no presenta datos útiles para la exploración de datos, por lo que se ha omitido.
 
 ```{r message = FALSE, warning = FALSE}
 # Script para cargar data al workspace
@@ -216,14 +217,9 @@ people %>%
   scale_fill_discrete(name = "re-offender?")
 ```
 
-
+No se puede ver una tendencia, e incluso se pueden ver valores anti intuitivos, ya que los que cometen mas delitos post primer delitos son los del decil 7 en vez de los delos deciles posteriores, quizás ya que los de los deciles posteriores tienden a permanecer mas tiempo encarcelados, lo que puede dificultar el cometer delitos posteriores.
 
 ```{r}
-# pregunta:
-#     como se distribuyen la cantidad de crímenes posterior al original?
-# insight:
-#     se nota que incrementan algo, pero no bastante, podría ser que
-#     mayor decil --> mas t en carcel --> menos oportunidad de cometer crímenes ?
 people %>%
   filter(decile_score > 0) %>%
   filter(!is.na(c_arrest_date) ) %>%
@@ -274,13 +270,9 @@ people_partial_id %>%
     theme(legend.position = "none", axis.text.x = element_text(angle=15, vjust=0.9, hjust=0.55))
 ```
 
+Se puede ver como las afroamericanos mantienen una distribución de entre 18 a 30 años con varios outsiders que corresponden a personas de la tercera edad, mientras que las demás etnias tienen distribuciones de entre los 40-45 años a los 20 con pocos outsiders correspondientes a personas de la mayor edad.
+
 ```{r}
-# pregunta:
-#     Como se distribuyen etnicamente las edades?
-# insight:
-#     Se puede observar que salvo los afro-americanos los grupos etnicos distribuyen
-#     de forma similar entorno a la edad, los outliers son normalmente personas de la
-#     3ra edad
 people %>% 
   ggplot(aes(x=race, y=age)) +
     geom_boxplot() +
@@ -288,13 +280,10 @@ people %>%
          x="Race", y="Age")
 ```
 
+Las personas de la tercera edad tienden a pertenecer al primer decil, mientra que en general mientras
+que se avanza en los deciles se puede ver como va permaneciendo una concentración de gente joven y va decreciendo la gente mayor.
+
 ```{r}
-# pregunta:
-#     Existira una relacion edad y decil de COMPAS?
-# insight:
-#     La gente de 3ra edad se ubica más frecuentemente en el decil 1, mientras que
-#     el resto de las edades se distribuye mas o menos decrementalmente por cada
-#     decil, mostrandose una concentración mayor de adultos jovenes
 people %>%
   filter(decile_score > 0) %>%
   ggplot(aes(x=reorder(decile_score, as.integer(decile_score)), y=age)) +
@@ -332,6 +321,8 @@ people_charge <- charge %>%
 
 #### Gráficos
 
+Se puede ver como se detiene mas a las personas afroamericanas que a las personas de cualquier otra etnia por cargos"flimsy", aunque como en la muestra existen pocos casos de datos flimsy la observacion puede no tener el suficiente peso
+
 ```{r}
 # pregunta:
 #     Los cargos sospechosamente leves, y/o ambiguos son repartidos con bias racial?
@@ -360,8 +351,6 @@ Dado el análisis realizado, se formularon las siguientes preguntas:
 -   ¿Es posible predecir el valor `raw_data` de la tabla `compas` de una persona en función de su edad, género y/o etnia?
 
 Esta es la pregunta principal del proyecto, ya que si es posible crear un modelo que nos permita predecir la puntuación que COMPAS le dio a una persona, basándonos exclusivamente en la edad, género y etnia de esta. Entonces se podría concluir que efectivamente existe una discriminación de parte COMPAS, puesto que existe una relación lo suficientemente evidente como para que un modelo pueda predecir la puntuación que le dio a una persona.
-
-
 
 ## Contribuciones
 
