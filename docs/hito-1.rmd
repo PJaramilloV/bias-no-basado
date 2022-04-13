@@ -363,4 +363,4 @@ De igual manera es importante notar que, a pesar de que se habla de un modelo di
 -   Rodrigo Iturrieta: Realizo el material de apoyo para la presentación, así como la edición de la misma.
 -   Pablo Jaramillo: Encargado de hacer la exploración de datos.
 -   Cristián Lillo: Redacto el presente informe.
--   Benjamin Valenzuela: Encargado de hacer la exploración de datos.
+-   Benjamin Valenzuela: Ayudo a la exploración de datos, asi como en la redacción de la parte final del informe.
