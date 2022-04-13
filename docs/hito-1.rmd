@@ -340,15 +340,22 @@ people_charge %>%
 
 Dado el análisis realizado, se formularon las siguientes preguntas:
 
--   ¿Existiran grupos de personas que compartan la misma tasa de reincidencia que la de las personas afroamericanas?
+-   ¿Existirán grupos de personas que compartan la misma tasa de reincidencia que la de las personas afroamericanas?
 
--   ¿Sera posible enmascarar u omitir la etnia de la persona y conseguir resultados de compas similares?
+Si se puede encontrar otro grupo, entonces se podría usar para tratar de predecir la puntuación de COMPAS, para asi analizar si este comete discriminación basada en etnia o realmente es debido a este factor.
 
 -   ¿Es posible predecir la etnia de una persona en base a su decil y raw_score?
 
--   ¿Es posible predecir el valor `raw_data` de la tabla `compas` de una persona en función de su edad, género y/o etnia?
+Saber esto es clave para poder concluir que efectivamente existe una discriminación de parte COMPAS, puesto que existe una relación lo suficientemente evidente como para que un modelo pueda predecir la puntuación que le dio a una persona, basándose principalmente en la etnia.
 
-Esta es la pregunta principal del proyecto, ya que si es posible crear un modelo que nos permita predecir la puntuación que COMPAS le dio a una persona, basándonos exclusivamente en la edad, género y etnia de esta. Entonces se podría concluir que efectivamente existe una discriminación de parte COMPAS, puesto que existe una relación lo suficientemente evidente como para que un modelo pueda predecir la puntuación que le dio a una persona.
+-   ¿Es posible predecir el valor `raw_data` de la tabla `compas` de una persona en función de variables correlacionadas a la etnia?
+
+En el análisis vimos que existían otras variables que hacían al grupo de los afroamericanos muy distintivo entre el resto, como la tasa de reincidencia y la edad. Encontrar estas relaciones inesperadas, ayudará a poder formular un modelo que no sea discriminatorio en su base. 
+
+-   ¿Será posible enmascarar u omitir la etnia de la persona y conseguir resultados de COMPAS similares?
+
+Esta es, por lo tanto, la pregunta principal del proyecto, ya que si es posible crear un modelo que nos permita predecir la puntuación que COMPAS le dio a una persona, basándonos exclusivamente en la edad, género y etnia de esta, entonces no sólo se evidenciaría que COMPAS no es discriminatorio, sino que también podría ser una tentadora metodología para crear modelos que tampoco lo sean.
+
 Finalmente, queda clara la dirección que el grupo debe seguir para avanzar en el proyecto, es indispensable el averiguar bajo qué criterios criminalísticos son otorgados los puntajes, para así poder visualizar de mejor manera como se distribuyen estos antecedentes con respecto a la edad, sexo, etnia e incluso ingresos económicos. Por lo que de igual forma se intentara en el futuro analizar si omitiendo o enmascarando la etnia de la persona se pueden obtener resultados similares a los que da compas.
 
 ## Contribuciones
