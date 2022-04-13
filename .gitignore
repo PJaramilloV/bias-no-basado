@@ -24,6 +24,7 @@
 /*.Rcheck/
 
 # RStudio files
+bias-no-basado.Rproj
 .Rproj.user/
 
 # produced vignettes

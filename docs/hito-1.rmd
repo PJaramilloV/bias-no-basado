@@ -128,9 +128,7 @@ people_not_sentenced <- people_partial_id %>% filter(is.na(person_id))
 
 #### Gráficos
 
-Nuestra primera pregunta a responder con esta tabla es: ¿Cómo se atribuyen las personas por decil según sexo?
-
-Podemos ver una clara tendencia a que la cantidad de personas disminuya por decil. También es visible que esta diferencia es más pronunciada en el gráfico de las mujeres.
+Comenzaremos viendo la cantidad de personas según su decil de COMPAS, donde además separaremos según su sexo en gráficos distintos. Podemos ver una clara tendencia a que la cantidad de personas disminuya por decil. También es visible que esta diferencia es más pronunciada en el gráfico de las mujeres.
 
 Es necesario notar también que la cantidad de hombres corresponde a aproxidamente el cuádruple que la cantidad de mujeres.
 
@@ -146,7 +144,7 @@ people %>%
   theme(legend.position = "none")
 ```
 
-Notamos una alta cantidad de gente afroamericana, seguida de las personas caucásicas e hispánicas. También existe un muy bajo porcentaje de asiáticos.
+Mostramos a continuación un gráfico con la cantidad de personas analizadas por COMPAS, distribuyéndolas en el gráfico según su etnia. Notamos en los datos una alta cantidad de gente afroamericana, seguida de personas caucásicas e hispánicas. También existe un muy bajo porcentaje de asiáticos y nativos americanos.
 
 ```{r}
 people %>%
@@ -160,7 +158,7 @@ people %>%
   theme(legend.position = "none")
 ```
 
-Existe una clara tendencia a disminuir la cantidad de persona a medida que avanzan los deciles, salvo para afroamericanos y nativos americanos. Es especialmente preocupante el primero pues se muestra una cantidad casi pareja en todos sus deciles.
+Volviendo a revisar el decil de COMPAS, pero separando ahora por etnia, es visible que existe una clara tendencia a disminuir la cantidad de persona a medida que avanzan los deciles, salvo para afroamericanos y nativos americanos. Es especialmente preocupante el primero pues se muestra una cantidad casi pareja en todos sus deciles.
 
 ```{r}
 people %>%
@@ -174,7 +172,7 @@ people %>%
     theme(legend.position = "none")
 ```
 
-El gráfico nos muestra una relación inversa entre quienes no reinciden en cometer crímenes y su decil correspondiente.
+Ahora mostraremos la cantidad de personas que vuelven a cometer un crimen y cuántas no, agrupándolas según su decil. El gráfico generado nos muestra una relación inversa entre quienes no reinciden en cometer crímenes y su decil correspondiente, es decir, a medida que aumentan los deciles disminye la cantidad de personas que vuelven a cometer algún crimen.
 
 ```{r}
 people %>%
@@ -192,11 +190,11 @@ people %>%
     scale_fill_discrete(name = "re-offender?")
 ```
 
-Consideraremos solamente a afroamericanos, asiáticos, nativos americanos y otros.
+A continuación separaremos la información recién obtenida según etnia, pero consideraremos solamente a afroamericanos, caucásicos, hispánicos y los categorizados como "otros".
 
 Existe una relación incremental de ofensores reincidentes y decil para los afroamericanos. Para el resto de los gráficos se muestra una versión gaussiana. Esto podría interpretarse como un sobrearresto a afroamericanos.
 
-En cambio, para los que no vuelven a cometer un crimen, la relación entre la cantidad de personas y su decil es inversa. La excepción son los afroamericanos, pues para ellos se mantiene aproximadamente constante.
+En cambio, para los que no vuelven a cometer un crimen, la relación entre la cantidad de personas y su decil es inversa. La excepción son los afroamericanos, pues para ellos se mantiene casi constante.
 
 ```{r}
 people %>%
@@ -217,7 +215,7 @@ people %>%
   scale_fill_discrete(name = "re-offender?")
 ```
 
-No se puede ver una tendencia, e incluso se pueden ver valores anti intuitivos, ya que los que cometen mas delitos post primer delitos son los del decil 7 en vez de los delos deciles posteriores, quizás ya que los de los deciles posteriores tienden a permanecer mas tiempo encarcelados, lo que puede dificultar el cometer delitos posteriores.
+En este gráfico de reincidencia, donde separamos a las personas que han cometido crímenes violentos de las que no, destacamos que quienes cometen más reincidencias de delitos son las personas violentas desde el decil 7 en adelante. También debemos notar que  las personas no violentas suelen presentar una reinicidencia similar desde el tercer decil.
 
 ```{r}
 people %>%
@@ -253,7 +251,7 @@ people %>%
 
 ```
 
-Las proporciones se mantienen constantes entre los gráficos de las personas que son castigadas con cárcel y prisión, comparados con las que no.
+Separando por etnia, compararemos en dos gráficos a las personas que son o no castigadas con cárcel y prisión. Las proporciones se mantienen similares entre los gráficos, pero es notorio que la probabilidad de terminar en la cárcel es más de 10 veces la probabilidad de que no.
 
 ```{r}
 people_partial_id %>%
@@ -270,7 +268,7 @@ people_partial_id %>%
     theme(legend.position = "none", axis.text.x = element_text(angle=15, vjust=0.9, hjust=0.55))
 ```
 
-Se puede ver como las afroamericanos mantienen una distribución de entre 18 a 30 años con varios outsiders que corresponden a personas de la tercera edad, mientras que las demás etnias tienen distribuciones de entre los 40-45 años a los 20 con pocos outsiders correspondientes a personas de la mayor edad.
+Viendo la importancia de edad y etnia, nos encontramos que las afroamericanos mantienen una distribución de entre 18 a 30 años con varios outsiders que corresponden a personas de la tercera edad. En cambio las demás etnias tienen distribuciones de entre los 20 a los 40 o 45 años, con pocos outsiders correspondientes a personas mayores que dicho rango.
 
 ```{r}
 people %>% 
@@ -280,7 +278,7 @@ people %>%
          x="Race", y="Age")
 ```
 
-Las personas de la tercera edad tienden a pertenecer al primer decil, mientra que en general mientras que se avanza en los deciles se puede ver como va permaneciendo una concentración de gente joven y va decreciendo la gente mayor.
+Tomando la edad y deciles en comparación ahora, es notorio que en el primer decil las personas de tercera edad muestran una mayor presencia que en el resto. Es en estas otras distribuciones donde la gente joven representa a la mayoría de sus criminales.
 
 ```{r}
 people %>%
@@ -320,14 +318,9 @@ people_charge <- charge %>%
 
 #### Gráficos
 
+Revisando ahora la tabla con los cargos de los delitos, nos enfocaremos en mostrar la diferencia entre la gente arrestada por cargos vagamente demostrados, y el resto, según la etnia. En ambos casos los afroamericanos son ampliamente acusados sobre el resto de las etnias, llegando a ser más del doble que la cantidad de caucásicos en cargos endebles y de poca veracidad.
+
 ```{r}
-# pregunta:
-#     Los cargos sospechosamente leves, y/o ambiguos son repartidos con bias racial?
-# insight:
-#     posiblemente, se vuelve a ver que en especial los "whites" se les detiene
-#     menos que a los afro-americanos bajo esos cargos
-# DISCLAIMER:
-#     se necesitan mas cargos "flimsy" para dar peso a la observacion
 people_charge %>%
   group_by(race) %>%
   mutate(count = n()) %>%
@@ -355,7 +348,7 @@ Dado el análisis realizado, se formularon las siguientes preguntas:
 
 Esta es la pregunta principal del proyecto, ya que si es posible crear un modelo que nos permita predecir la puntuación que COMPAS le dio a una persona, basándonos exclusivamente en la edad, género y etnia de esta. Entonces se podría concluir que efectivamente existe una discriminación de parte COMPAS, puesto que existe una relación lo suficientemente evidente como para que un modelo pueda predecir la puntuación que le dio a una persona.
 
-## Concluciones
+## Conclusiones
 
 Finalmente, queda clara la dirección que el grupo debe seguir para avanzar en el proyecto, es indispensable el averiguar bajo qué criterios criminalísticos son otorgados los puntajes, para así poder visualizar de mejor manera como se distribuyen estos antecedentes con respecto a la edad, sexo, etnia e incluso ingresos económicos. Por lo que de igual forma se intentara en el futuro analizar si omitiendo o enmascarando la etnia de la persona se pueden obtener resultados similares a los que da compas.
 

@@ -38,39 +38,39 @@ Para empezar, sería interesante ver como se distribuyen las personas, separadas
 
 En el gráfico se observa que para las personas de sexo femenino, hay menos casos en general y, comparativamente, hay menos gente en los deciles mayores con respecto al sexo masculino.
 
-Podemos hacer esto mismo, pero en base la etnia de la persona. Donde vemos la clara irregularidad, la mayoría de etnias presentan un gráfico inversamente proporcional: la cantidad decrece conforme el decil aumenta. No es el caso de los afro-americanos y los nativos, donde vemos un comportamiento semi-constante a lo largo de los deciles.
+Podemos hacer esto mismo, pero en base la etnia de la persona. Donde vemos la clara irregularidad, la mayoría de etnias presentan un gráfico inversamente proporcional: la cantidad decrece conforme el decil aumenta. No es el caso de los afroamericanos y los nativos, donde vemos un comportamiento semi-constante a lo largo de los deciles.
 
-Con esto, queda claro que, al menos, en tema de estadística pura, existe una distinción en el puntaje de los afro-americanos.
+Con esto, queda claro que, al menos, en tema de estadística pura, existe una distinción en el puntaje de los afroamericanos.
 
-Deberíamos ver cosas que condicionan esta situación, una cosa interesante que contiene esta base de datos es la cantidad de personas que vuelven a cometer un crimen, después del primero. Podemos centrarnos en revisar comparar los afro-americanos, con los hispánicos y caucásicos. Ya que estos dos mantiene un comportamiento similar en el anterior gráfico.
+Deberíamos ver cosas que condicionan esta situación, una cosa interesante que contiene esta base de datos es la cantidad de personas que vuelven a cometer un crimen, después del primero. Podemos centrarnos en revisar comparar los afroamericanos, con los hispánicos y caucásicos. Ya que estos dos mantiene un comportamiento similar en el anterior gráfico.
 
-Vemos que la cantidad de reincidencia aumenta de manera consistente en el caso de los afro-americanos, con respecto a los caucásicos, donde parece ser más una distribución normal.
+Vemos que la cantidad de reincidencia aumenta de manera consistente en el caso de los afroamericanos, con respecto a los caucásicos, donde parece ser más una distribución normal.
 
-Siguiendo con esto, podemos ver ahora como se distribuyen las edades de los criminales. En el siguiente gráfico se puede observar que los afro-americanos tienen una cantidad de personas mucho más joven que el resto de etnias, rondando la mediana los 33 años. Esto es importante, puesto que en este otro gráfico podemos ver que a medida que aumenta el decil de la puntuación, la edad también disminuye.
+Siguiendo con esto, podemos ver ahora como se distribuyen las edades de los criminales. En el siguiente gráfico se puede observar que los afroamericanos tienen una cantidad de personas mucho más joven que el resto de etnias, rondando la mediana los 33 años. Esto es importante, puesto que en este otro gráfico podemos ver que a medida que aumenta el decil de la puntuación, la edad también disminuye.
 
 ### Análisis centrado en la tabla charge
 
-Para terminar con el análisis podemos tomar la tabla charge, y analizar los cargos menores o sin detalles según la etnia, donde vemos que existe una ligera diferencia en comparación con los otros cargos, en particular, la razón entre la cantidad de afro-americanos y caucásicos para los cargos menores es de un 60 y 20% del total, respectivamente, mientras que para los cargos más serios es de un 60 y 30%.
+Para terminar con el análisis podemos tomar la tabla charge, y analizar los cargos menores o sin detalles según la etnia, donde vemos que existe una ligera diferencia en comparación con los otros cargos, en particular, la razón entre la cantidad de afroamericanos y caucásicos para los cargos menores es de un 60 y 20% del total, respectivamente, mientras que para los cargos más serios es de un 60 y 30%.
 
 ## Preguntas y Problemas
 
-Una vez dicho esto, habiendo analizado los parámetros más importantes de la base de datos, saltan a la mente unas cuantas preguntas, yendo por partes:
+Una vez dicho esto, y habiendo analizado los parámetros más importantes de la base de datos, se vienen a la mente unas cuantas preguntas, como por ejemplo:
 
-- ¿Por qué la distribución de los afro-americanos es tan uniforme?
+- ¿Por qué la distribución de los afroamericanos es tan uniforme?
 
-Resulta intrigante ver que COMPAS otorga una puntuación casi perfectamente distribuida. Esto se puede ver como un claro indicio de racismo del modelo, puesto que ocurre solo para los afro-americanos, podríamos hacer el ejercicio opuesto y ver si mediante los deciles y el puntaje en crudo se pueda predecir al etnia de una persona.
+Resulta intrigante ver que COMPAS otorga una puntuación casi perfectamente distribuida. Esto se puede ver como un claro indicio de racismo del modelo, puesto que ocurre solo para los afroamericanos. Podríamos hacer el ejercicio opuesto y ver si mediante los deciles y el puntaje en crudo se puede predecir la etnia de una persona.
 
-- ¿Los afro-americanos son más propensos a volver a cometer un crimen?
+- ¿Los afroamericanos son más propensos a volver a cometer un crimen?
 
-Tal vez no es que la modelo sea racista, quizás como existe una relación tan particular podríamos obtener resultados similares a los de COMPAS usando la reincidencia en vez de la etnia de la persona, si este es el caso, realmente sería complejo hablar de que el modelo es racista, puesto que es consecuencia de otro parámetro. Con lo cual podríamos centrarnos en encontrar otro grupo que posea la misma curva de reincidencia.
+Tal vez no es que el modelo sea racista, quizás como existe una relación tan particular podríamos obtener resultados similares a los de COMPAS usando la reincidencia en vez de la etnia de la persona. Si este es el caso, sería realmente complejo hablar de que el modelo es racista, puesto que es consecuencia de otro parámetro, con lo cual podríamos centrarnos en encontrar otro grupo que posea la misma curva de reincidencia.
 
 - La importancia de la edad
 
-Algo que pasa desapercibido a primera vista, es que tanto importa la edad a la hora de hacer estos análisis de crímenes, como vimos, la mayoría de criminales afro-americanos tiene una menor edad con respecto a las otras etnias. A su vez, los deciles más altos del puntaje de COMPAS, también corresponden con gente más joven. Es posible hacer lo mismo que lo anterior pero con la edad: reemplazar la etnia y ver los resultados. Mientras más relaciones podemos hacer de peso entre variables no relacionadas con la etnia y el puntaje de COMPAS, tendremos más formas de poder abarcar la problemática.
+Algo que pasa desapercibido a primera vista es qué tanto importa la edad a la hora de hacer estos análisis de crímenes. Como vimos, la mayoría de los criminales afroamericanos tiene una menor edad con respecto a las otras etnias. A su vez, los deciles más altos del puntaje de COMPAS, también corresponden con gente más joven. Es posible hacer lo mismo que mencionamos anteriormente pero con la edad, es decir, reemplazar la etnia y ver los resultados. Mientras más relaciones podemos hacer de peso entre variables no relacionadas con la etnia y el puntaje de COMPAS, tendremos más formas de poder abarcar la problemática.
 
 - Género e ingresos
 
-Algo que no hemos profundizado mucho en esta primera etapa, es el análisis a través del sexo del sujeto. Es algo a tener en cuenta para poder ver si sólo ocurre discriminación a nivel étnico o también existe a nivel de género. Ahora sólo alcanzamos a ver una pincelada de esto y el análisis mostró que podría existir. Adicionalmente, notamos que esta base de datos no contiene en nivel socio-económico del sujeto, asi como el nivel educativo, sería un esfuerzo mayor poder cruzar otra base de datos para obtener estos datos, pero de poder lograrlo se conseguiría un mayor entendimiento. 
+Algo que no hemos profundizado mucho en esta primera etapa es el análisis a través del sexo del sujeto. Es algo que debemos tener en cuenta para poder ver si sólo ocurre discriminación a nivel étnico o también existe a nivel de género. Ahora sólo alcanzamos a ver una pincelada de esto, pero el análisis mostró que podría existir. Adicionalmente, notamos que esta base de datos no contiene el nivel socioeconómico del sujeto, así como tampoco el nivel educativo. Sería un mayor esfuerzo el poder cruzar otra base de datos para obtener esta información, pero de poder lograrlo se conseguiría un mayor entendimiento.
 
 ## Conclusión
 
