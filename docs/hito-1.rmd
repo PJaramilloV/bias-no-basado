@@ -294,6 +294,9 @@ people %>%
 
 #### Estructuras de datos
 
+Para analizar los cargos, sólo nos interesa las personas que han cometido crímenes, para ello filtramos la tabla `people_partial_id` basándonos en el id de la información de `jailhistory` y `charge`.
+
+```{r}
 ```{r}
 # Lista de cargos sospechosos compilada a mano
 flimsy_charges <- c("Infraction", "Municipal (Speed Not Indicated)",
