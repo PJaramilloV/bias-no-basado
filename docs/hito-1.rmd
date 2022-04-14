@@ -1,5 +1,5 @@
 ---
-title: "Hito 1"
+title: "Hito 1 Grupo 8"
 author: Vicente González, Rodrigo Iturrieta, Pablo Jaramillo, Cristian Lillo y Benjamín
   Valenzuela
 date: "Abril 2022"
@@ -10,6 +10,12 @@ output:
   pdf_document:
     toc: yes
 ---
+
+## Material
+
+- Repositorio: [https://github.com/propublica/compas-analysis](https://github.com/propublica/compas-analysis)
+- Video: [https://drive.google.com/file/d/1TNpHXC2bTTwXfvSc1zU21SxwGIv-3yGU/view?usp=sharing](https://drive.google.com/file/d/1TNpHXC2bTTwXfvSc1zU21SxwGIv-3yGU/view?usp=sharing)
+
 
 ## Introducción
 
