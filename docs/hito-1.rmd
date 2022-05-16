@@ -1,0 +1,373 @@
+---
+title: "Hito 1 Grupo 8"
+author: Vicente González, Rodrigo Iturrieta, Pablo Jaramillo, Cristian Lillo y Benjamín
+  Valenzuela
+date: "Abril 2022"
+output:
+  html_document:
+    theme: default
+    toc: yes
+  pdf_document:
+    toc: yes
+---
+
+## Material
+
+- Repositorio: [https://github.com/propublica/compas-analysis](https://github.com/propublica/compas-analysis)
+- Video: [https://drive.google.com/file/d/1TNpHXC2bTTwXfvSc1zU21SxwGIv-3yGU/view?usp=sharing](https://drive.google.com/file/d/1TNpHXC2bTTwXfvSc1zU21SxwGIv-3yGU/view?usp=sharing)
+
+
+## Introducción
+
+Durante la última década, la sociedad moderna ha estado expuesta a un periodo de disconformidad y crisis. Múltiples protestas han ocurrido a lo largo del mundo, donde se evidencian malestares en temas de discriminación, igualdad y justicia.
+
+Uno de estos movimientos es el de Black Lives Matter, donde la población afroamericana de Estados Unidos ha dejado claro que existe, a dia de hoy, un trato desigual debido a la etnia de la persona, donde se mostró al mundo entero un sistema que los desfavorecía enormemente o directamente no esperaban nada de ellos.
+
+La motivación del equipo nace a raíz de estas problemáticas, donde, además, desde un punto de vista de *data mining*, salta a la vista la pregunta: ¿Se puede hacer un modelo que consiga evidenciar la discriminación en una base de datos?
+
+Particularmente, para abarcar esta problemática, se decidió dar enfoque al caso de estudio de COMPAS. En este, se encontró que el modelo predictivo **COMPAS** (Correctional Offender Management Profiling for Alternative Sanctions) otorgaba una evaluación de riesgo mayor a personas afroamericanas que al resto. Es decir, que el modelo "discriminaba" a ciertos grupos de personas basadas en su etnia, marcándolas como potencialmente más propensos a cometer un crimen.
+
+La idea central del proyecto es poder construir un modelo a partir de los datos de COMPAS, para poder evaluar la discriminación en la base de datos. Identificando, además los parámetros bajo los cuales COMPAS hace la discriminación.
+
+## Exploración de datos
+
+### Acercamiento inicial
+
+Primero cargamos los datos desde la base de datos de [COMPAS](https://github.com/propublica/compas-analysis). Esta contiene 7 tablas:
+
+1.  `casearrest`: Observaciones sobre los cargos de arrestos de forma sucinta y sin detalles sobre el cargo.
+2.  `charge`: Observaciones de cargos criminales/infracciones en detalle, la diferencia entre esta y la tabla `casearrest` es que en esta los cargos no se agrupan.
+3.  `compas`: Observaciones de evaluaciones de un cierto tipo de métrica de COMPAS.
+4.  `jailhistory`: Observaciones sobre el periodo carcelario de cada persona enviada a cárcel por el crimen que llevó a cabo el análisis de COMPAS. Solo se consideran periodos que tienen fin, las sentencias que continuaron después de la fecha de rescate de los datos están omitidos.
+5.  `people`: Cada observación es un resumen personal del historial de COMPAS del individuo. Notando nombre, edad, genero, etnia, crimen que llevó al análisis de COMPAS y en caso de existir, el crimen reincidente (o segundo crimen).
+6.  `prisonhistory`: Similar a la tabla de `jailhistory` pero es de datos que involucran periodo de prisión en lugar de cárcel.
+7.  `summary`: Esta no presenta datos útiles para la exploración de datos, por lo que se ha omitido.
+
+```{r message = FALSE, warning = FALSE}
+# Script para cargar data al workspace
+
+# Descomentar estas dos líneas para instalar los paquete
+# install.packages("RSQLite")
+# install.packages("here")
+library(RSQLite)
+library(rstudioapi)
+library(tidyverse)
+library(utils)
+library(here)
+library(scales)
+
+# Establecer como working directory al directorio con el archivo ".here"
+setwd(here())
+
+# getwd() # Verificar que se estableció correctamente
+
+# Cargar BD, la cual contiene 7 tablas:
+db <- dbConnect(dbDriver("SQLite"), dbname = "compas.db")
+# dbListTables(db)
+
+#   tabla     |           linea de carga          | dimensiones[fila,columna]
+casearrest    <- dbReadTable(db, "casearrest")    # [128183,  8]
+charge        <- dbReadTable(db, "charge")        # [148086, 15]
+compas        <- dbReadTable(db, "compas")        # [37578,  21]
+jailhistory   <- dbReadTable(db, "jailhistory")   # [22111,   7]
+people        <- dbReadTable(db, "people")        # [11757,  41]
+prisonhistory <- dbReadTable(db, "prisonhistory") # [4945,    9]
+summary       <- dbReadTable(db, "summary")       # [0,      26] # no data
+
+dbDisconnect(db)
+rm(db)
+rm(summary)
+```
+
+Modificamos la tabla **people** para agrupar a las personas según su etnia y sexo. Así obtenemos los promedios y medianas de las variables *edad*, *tiempo encarcelados* y *decil de riesgo de reinicidencia*.
+
+Podemos notar que los hombres afroamericanos y caucásicos poseen las mayores cantidades de arrestos, con 4697 y 3117 respectivamente. Sin embargo, son los hombres afroamericanos los que pasan mayor tiempo encarcelados en promedio, junto con los hombres y mujeres asiáticos.
+
+```{r message = FALSE}
+people %>%
+       group_by(race, sex) %>%
+       summarize(numero_total = n(),
+                 promedio_edad = round(mean(age), digits = 2),
+                 mediana_edad = median(age),
+                 promedio_tiempo_carcel = round(mean(as.Date(c_jail_out)
+                                               - as.Date(c_jail_in),
+                                               na.rm = TRUE), digits = 2),
+                 mediana_tiempo_carcel = median(as.Date(c_jail_out)
+                                                - as.Date(c_jail_in),
+                                                na.rm = TRUE),
+                 promedio_decile = round(mean(decile_score), digits = 2),
+                 mediana_decile = median(decile_score),
+                 cantidad_decile_10 = sum(decile_score == 10))
+```
+
+### Análisis centrado en la tabla **people**
+
+#### Estructuras de datos
+
+Se cruza la información de las tablas de historia carcelaria (jail) e historia penal (prison) para enlazar los id de las personas con su nombre completo y su fecha de nacimiento.
+
+Se filtran además person_id != id, pues son las personas que aparecen duplicadas. En este caso fueron solamente 3. Con esos valores eliminados se puede copiar el id al person_id pues son idénticos.
+
+Se tiene entonces una tabla que enlaza únicamente a una persona con 1 id y así podemos cruzar la información de esta tabla con la tabla de arresto para graficar según etnia.
+
+```{r}
+# Tabla de personas con sus IDs
+
+people_partial_id <- people %>%
+  left_join(jailhistory %>%
+              distinct(first, last, dob, person_id) %>%
+              select("first", "last", "dob", "person_id"),
+            by=c("first", "last", "dob")) %>%
+  left_join(prisonhistory %>%  distinct(first, last, dob, person_id) %>%
+              select("first", "last", "dob", "person_id"),
+            by=c("first", "last", "dob")) %>%
+  mutate(person_id.x = ifelse(is.na(person_id.x), person_id.y, person_id.x)) %>%
+  relocate(person_id = person_id.x) %>%
+  select(-person_id.y) %>%
+  filter(person_id == id | is.na(person_id))
+
+# La gente que no tiene person_id es porque no estaban en
+# jailhistory/prisonhistory
+
+people_not_sentenced <- people_partial_id %>% filter(is.na(person_id))
+```
+
+#### Gráficos
+
+Comenzaremos viendo la cantidad de personas según su decil de COMPAS, donde además separaremos según su sexo en gráficos distintos. Podemos ver una clara tendencia a que la cantidad de personas disminuya por decil. También es visible que esta diferencia es más pronunciada en el gráfico de las mujeres.
+
+Es necesario notar también que la cantidad de hombres corresponde a aproxidamente el cuádruple que la cantidad de mujeres.
+
+```{r}
+people %>%
+  filter(decile_score > 0) %>%
+  ggplot(aes(x = decile_score, fill = sex)) +
+  geom_bar() +
+  facet_wrap(~ sex, scales = "free_y") +
+  scale_x_continuous(breaks = pretty_breaks(10)) +
+  labs(title = "COMPAS decile score distribution by sex",
+       x = "decile score", y = "number of people") +
+  theme(legend.position = "none")
+```
+
+Mostramos a continuación un gráfico con la cantidad de personas analizadas por COMPAS, distribuyéndolas en el gráfico según su etnia. Notamos en los datos una alta cantidad de gente afroamericana, seguida de personas caucásicas e hispánicas. También existe un muy bajo porcentaje de asiáticos y nativos americanos.
+
+```{r}
+people %>%
+  filter(decile_score > 0) %>%
+  group_by(race) %>%
+  mutate(count = n()) %>%
+  ggplot(aes(x = reorder(race, -count), fill = race)) +
+  geom_bar() +
+  labs(title = "Number of analysed people by race",
+       x = "decile score", y = "number of people") +
+  theme(legend.position = "none")
+```
+
+Volviendo a revisar el decil de COMPAS, pero separando ahora por etnia, es visible que existe una clara tendencia a disminuir la cantidad de persona a medida que avanzan los deciles, salvo para afroamericanos y nativos americanos. Es especialmente preocupante el primero pues se muestra una cantidad casi pareja en todos sus deciles.
+
+```{r}
+people %>%
+  filter(decile_score > 0) %>%
+  ggplot(aes(x=decile_score, fill=race)) + 
+  geom_bar() +
+    facet_wrap(~ race, scales = "free_y") + 
+    scale_x_continuous(breaks= pretty_breaks(10)) +
+    labs(title="COMPAS decile score distribution by race",
+         x="decile score", y="number of people") +
+    theme(legend.position = "none")
+```
+
+Ahora mostraremos la cantidad de personas que vuelven a cometer un crimen y cuántas no, agrupándolas según su decil. El gráfico generado nos muestra una relación inversa entre quienes no reinciden en cometer crímenes y su decil correspondiente, es decir, a medida que aumentan los deciles disminye la cantidad de personas que vuelven a cometer algún crimen.
+
+```{r}
+people %>%
+  filter(decile_score > 0) %>%
+  filter(!is.na(c_arrest_date)) %>%
+  filter(is_recid != -1) %>%
+  mutate(decile_score = as.character(decile_score)) %>%
+  mutate(num_r_cases = ifelse(is.na(num_r_cases), 0, num_r_cases)) %>%
+  mutate(is_recid = ifelse(is_recid == 0, "No", "Yes")) %>%
+  ggplot(aes(x = reorder(decile_score, as.integer(decile_score)),
+             fill = is_recid)) +
+    geom_bar(position = position_dodge(width=0.5)) +
+    labs(title="Number of re-offencers by decile score",
+         x="decile score", y="Count") + 
+    scale_fill_discrete(name = "re-offender?")
+```
+
+A continuación separaremos la información recién obtenida según etnia, pero consideraremos solamente a afroamericanos, caucásicos, hispánicos y los categorizados como "otros".
+
+Existe una relación incremental de ofensores reincidentes y decil para los afroamericanos. Para el resto de los gráficos se muestra una versión gaussiana. Esto podría interpretarse como un sobrearresto a afroamericanos.
+
+En cambio, para los que no vuelven a cometer un crimen, la relación entre la cantidad de personas y su decil es inversa. La excepción son los afroamericanos, pues para ellos se mantiene casi constante.
+
+```{r}
+people %>%
+  filter(decile_score > 0) %>%
+  filter(!is.na(c_arrest_date) ) %>%
+  filter(is_recid != -1) %>%
+  mutate(race = ifelse(race %in% c("Asian", "Native American"), 
+                       "Other", race )) %>%
+  mutate(decile_score = as.character(decile_score)) %>%
+  mutate(num_r_cases = ifelse(is.na(num_r_cases), 0, num_r_cases)) %>%
+  mutate(is_recid = ifelse(is_recid == 0,"No","Yes")) %>%
+  ggplot(aes(x= reorder(decile_score, as.integer(decile_score)),
+             fill = is_recid)) +
+  geom_bar(position=position_dodge(width=0.5)) +
+  facet_wrap(~ race, scales = "free_y") +
+  labs(title="Number of re-offencers by decile score",
+       x="decile score", y="Count") + 
+  scale_fill_discrete(name = "re-offender?")
+```
+
+En este gráfico de reincidencia, donde separamos a las personas que han cometido crímenes violentos de las que no, destacamos que quienes cometen más reincidencias de delitos son las personas violentas desde el decil 7 en adelante. También debemos notar que  las personas no violentas suelen presentar una reinicidencia similar desde el tercer decil.
+
+```{r}
+people %>%
+  filter(decile_score > 0) %>%
+  filter(!is.na(c_arrest_date) ) %>%
+  filter(is_recid != -1) %>%
+  mutate(decile_score = as.character(decile_score)) %>%
+  mutate(is_violent_recid = ifelse(is_violent_recid == 0,"No","Yes")) %>%
+  ggplot(aes(x= reorder(decile_score, as.integer(decile_score)), 
+             y=num_r_cases, color=is_violent_recid)) + 
+    geom_boxplot(alpha=0.2) +
+    labs(title="Number of re-offences by decile score and violence",
+         x="decile score", y="Re-offences") + 
+    scale_color_discrete(name = "violent individual?") 
+```
+
+Los gráficos que comparan a la gente arrestada con y sin cargo, agrupados por su raza, nos muestra una tendencia similar en ambos gráficos. Los afroamericanos son los más arrestados en ambos casos y con una menor diferencia respecto a los caucásicos cuando existe un cargo para arrestarlos.
+
+```{r}
+people %>%
+  filter(!(is.na(c_charge_desc))) %>%
+  group_by(race) %>%
+  mutate(count = n()) %>%
+  ggplot(aes(x=reorder(race, -count), fill=race)) +
+    geom_bar() +
+    facet_wrap(~ c_charge_desc!="arrest case no charge", scales="free_y",
+                labeller=as_labeller(
+                c(`TRUE` = "arrest case with some charge", `FALSE` = "arrest case no charge"))
+               ) +
+    labs(title="Number of people arrested with reason: 'arrest case no charge' by race",
+          x="Race", y="Number of people") +
+    theme(legend.position = "none", axis.text.x = element_text(angle=15, vjust=0.9, hjust=0.55))
+
+```
+
+Separando por etnia, compararemos en dos gráficos a las personas que son o no castigadas con cárcel y prisión. Las proporciones se mantienen similares entre los gráficos, pero es notorio que la probabilidad de terminar en la cárcel es más de 10 veces la probabilidad de que no.
+
+```{r}
+people_partial_id %>%
+  group_by(race) %>%
+  mutate(count = n()) %>%
+  ggplot(aes(x=reorder(race, -count), fill=race)) +
+    geom_bar() +
+    facet_wrap(~ is.na(person_id), scales="free_y",
+               labeller=as_labeller(
+                 c(`TRUE` = "Not sent to jail/prison", `FALSE` = "Sent to jail/prison"))
+    ) +
+    labs(title="Race by whether people were sent to jail or prison",
+         x="Race", y="Number of people") +
+    theme(legend.position = "none", axis.text.x = element_text(angle=15, vjust=0.9, hjust=0.55))
+```
+
+Viendo la importancia de edad y etnia, nos encontramos que las afroamericanos mantienen una distribución de entre 18 a 30 años con varios outsiders que corresponden a personas de la tercera edad. En cambio las demás etnias tienen distribuciones de entre los 20 a los 40 o 45 años, con pocos outsiders correspondientes a personas mayores que dicho rango.
+
+```{r}
+people %>% 
+  ggplot(aes(x=race, y=age)) +
+    geom_boxplot() +
+    labs(title="Age distribution by race",
+         x="Race", y="Age")
+```
+
+Tomando la edad y deciles en comparación ahora, es notorio que en el primer decil las personas de tercera edad muestran una mayor presencia que en el resto. Es en estas otras distribuciones donde la gente joven representa a la mayoría de sus criminales.
+
+```{r}
+people %>%
+  filter(decile_score > 0) %>%
+  ggplot(aes(x=reorder(decile_score, as.integer(decile_score)), y=age)) +
+    geom_point(shape=16,  alpha=0.3, 
+               position = position_jitter(width= 0.3)) + 
+    labs(title="Age by COMPAS decile",
+         x="Decile", y="Age")
+```
+
+### Análisis centrado en la tabla **charge**
+
+#### Estructuras de datos
+
+Para analizar los cargos, sólo nos interesa las personas que han cometido crímenes, para ello filtramos la tabla `people_partial_id` basándonos en el id de la información de `jailhistory` y `charge`.
+
+```{r}
+# Lista de cargos sospechosos compilada a mano
+flimsy_charges <- c("Infraction", "Municipal (Speed Not Indicated)",
+                    "Speeding (Speed not Indicated)",
+                    "Speeding (Speed Not Indicated)",
+                    "Unlawful Speed / Speed Not Indicated", "Loitering", NA
+                   )
+
+
+people_w_id <- people_partial_id %>%
+                  mutate(person_id = ifelse(is.na(person_id), id, person_id))
+
+
+# tabla de los crimenes con razas appendadas
+# filtro para id's <NA> es porque no cometieron crimenes y por lo tanto no aparecen en jailhistory/charge 
+people_charge <- charge %>%
+                  left_join(people_w_id %>% 
+                              select(race, person_id), 
+                            by=c("person_id")) %>%
+                  distinct()
+```
+
+#### Gráficos
+
+Revisando ahora la tabla con los cargos de los delitos, nos enfocaremos en mostrar la diferencia entre la gente arrestada por cargos vagamente demostrados, y el resto, según la etnia. En ambos casos los afroamericanos son ampliamente acusados sobre el resto de las etnias, llegando a ser más del doble que la cantidad de caucásicos en cargos endebles y de poca veracidad.
+
+```{r}
+people_charge %>%
+  group_by(race) %>%
+  mutate(count = n()) %>%
+  ggplot(aes(x=reorder(race, -count), fill=race)) +
+    geom_bar() +
+    facet_wrap(~ !(charge %in% flimsy_charges), scales="free_y",
+               labeller=as_labeller(
+                 c(`FALSE` = "Flimsy charges", `TRUE` = "Other charges"))) +
+    labs(title="Number of arrests by race with flimsy charges compared to other cases",
+         x="Race", y="Number of arrests") +
+    theme(legend.position = "none", axis.text.x = element_text(angle=15, vjust=0.9, hjust=0.55))
+```
+
+## Preguntas y Problemas
+
+Dado el análisis realizado, se formularon las siguientes preguntas:
+
+-   ¿Existirán grupos de personas que compartan la misma tasa de reincidencia que la de las personas afroamericanas?
+
+Si se puede encontrar otro grupo, entonces se podría usar para tratar de predecir la puntuación de COMPAS, para asi analizar si este comete discriminación basada en etnia o realmente es debido a este factor.
+
+-   ¿Es posible predecir la etnia de una persona en base a su decil y raw_score?
+
+Saber esto es clave para poder concluir que efectivamente existe una discriminación de parte COMPAS, puesto que existe una relación lo suficientemente evidente como para que un modelo pueda predecir la puntuación que le dio a una persona, basándose principalmente en la etnia.
+
+-   ¿Es posible predecir el valor `raw_data` de la tabla `compas` de una persona en función de variables correlacionadas a la etnia?
+
+En el análisis vimos que existían otras variables que hacían al grupo de los afroamericanos muy distintivo entre el resto, como la tasa de reincidencia y la edad. Encontrar estas relaciones inesperadas, ayudará a poder formular un modelo que no sea discriminatorio en su base. 
+
+-   ¿Será posible enmascarar u omitir la etnia de la persona y conseguir resultados de COMPAS similares?
+
+Esta es, por lo tanto, la pregunta principal del proyecto, ya que si es posible crear un modelo que nos permita predecir la puntuación que COMPAS le dio a una persona, basándonos exclusivamente en la edad, género y etnia de esta, entonces no sólo se evidenciaría que COMPAS no es discriminatorio, sino que también podría ser una tentadora metodología para crear modelos que tampoco lo sean.
+
+Finalmente, queda clara la dirección que el grupo debe seguir para avanzar en el proyecto, es indispensable el averiguar bajo qué criterios criminalísticos son otorgados los puntajes, para así poder visualizar de mejor manera como se distribuyen estos antecedentes con respecto a la edad, sexo, etnia e incluso ingresos económicos. Por lo que de igual forma se intentara en el futuro analizar si omitiendo o enmascarando la etnia de la persona se pueden obtener resultados similares a los que da compas.
+
+## Contribuciones
+
+-   Vicente González: Ayudo a redactar el informe y escribió el guión de la presentación.
+-   Rodrigo Iturrieta: Realizo el material de apoyo para la presentación, así como la edición de la misma.
+-   Pablo Jaramillo: Encargado de hacer la exploración de datos.
+-   Cristián Lillo: Redacto el presente informe.
+-   Benjamin Valenzuela: Ayudo a la exploración de datos, asi como en la redacción de la parte final del informe.
