@@ -1,5 +1,35 @@
 source("init.R")
 
+# Estructuras de datos =========================================================
+
+
+# tabla de personas con sus IDs
+# se cruzan las tablas de historia carcelaria (jail) y penal (prison) para enlazar
+# los id's de las personas con su nombre completo y fecha de nacimiento
+#     se filtran person_id != id, pues son personas que aparecen duplicadas (3 personas)
+#       con esos valores eliminados se puede copiar el id al person id pues son identicos
+#       entonces se tiene una tabla que enlaza unicamente a una persona con 1 id
+#       para asi cruzar esta tabla con tablas de arresto para graficar segun raza
+people_partial_id <- people %>%
+                      left_join(jailhistory %>%
+                                  distinct(first, last, dob, person_id) %>%
+                                  select("first", "last", "dob", "person_id"), 
+                                by=c("first", "last", "dob")) %>%
+                      left_join(prisonhistory %>%  distinct(first, last, dob, person_id) %>%
+                                  select("first", "last", "dob", "person_id"), 
+                                by=c("first", "last", "dob")) %>%
+                      mutate(person_id.x = ifelse(is.na(person_id.x), person_id.y, person_id.x)) %>%
+                      relocate(person_id = person_id.x) %>%
+                      select(-person_id.y) %>% 
+                      filter(person_id == id | is.na(person_id))
+
+# la gente que no tiene person_id es porque no estaban en jailhistory/prisonhistory
+people_not_sentenced <- people_partial_id %>%
+                          filter(is.na(person_id))
+        
+
+# Exploracion ==================================================================
+
 # pregunta: 
 #     como se atribuyen las personas por decil segun sexo?
 # insight:
@@ -134,8 +164,59 @@ people %>%
 
 
 # pregunta:
+#     De la gente que no fue a prision o carcel, como se distribuyen?
+# insight:
+#     Las proporciones se mantienen +- constantes en relatividad entre ellas 
+#    (salvo a los hispanicos, se les sentencia menos a ellos)
+#     Notar: al parecer si te analiza COMPAS tienes una probabilidad de ~94.5%
+#             de ser sentenciado a carcel o prision.
+#             (91.5% si eres hispanico)
+people_partial_id %>%
+  group_by(race) %>%
+  mutate(count = n()) %>%
+  ggplot(aes(x=reorder(race, -count), fill=race)) +
+    geom_bar() +
+    facet_wrap(~ is.na(person_id), scales="free_y",
+               labeller=as_labeller(
+                 c(`TRUE` = "Not sent to jail/prison", `FALSE` = "Sent to jail/prison"))
+    ) +
+    labs(title="Race by whether people were sent to jail or prison",
+         x="Race", y="Number of people") +
+    theme(legend.position = "none", axis.text.x = element_text(angle=15, vjust=0.9, hjust=0.55))
+
+# pregunta:
+#     Como se distribuyen etnicamente las edades?
+# insight:
+#     Se puede observar que salvo los afro-americanos los grupos etnicos distribuyen
+#     de forma similar entorno a la edad, los outliers son normalmente personas de la
+#     3ra edad
+people %>% 
+  ggplot(aes(x=race, y=age)) +
+    geom_boxplot() +
+    labs(title="Age distribution by race",
+         x="Race", y="Age")
+
+# pregunta:
+#     Existira una relacion edad y decil de COMPAS?
+# insight:
+#     La gente de 3ra edad se ubica más frecuentemente en el decil 1, mientras que
+#     el resto de las edades se distribuye mas o menos decrementalmente por cada
+#     decil, mostrandose una concentración mayor de adultos jovenes
+people %>%
+  filter(decile_score > 0) %>%
+  ggplot(aes(x=reorder(decile_score, as.integer(decile_score)), y=age)) +
+    geom_point(shape=16,  alpha=0.3, 
+               position = position_jitter(width= 0.3)) + 
+    labs(title="Age by COMPAS decile",
+         x="Decile", y="Age")
+
+# pregunta:
 #     
 # insight:
 #     
 
 
+# pregunta:
+#     
+# insight:
+#     
