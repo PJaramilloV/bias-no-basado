@@ -15,7 +15,7 @@ C_BY_ASS = TRUE
 # Column eliminations
 NULL_NA = TRUE  # columnas nulas
 PADDING = TRUE  # columnas con información no utilizable
-HUMAN_R = FALSE  # columnas para lectura por humanos
+HUMAN_R = TRUE  # columnas para lectura por humanos
 
 # Row cleaning
 # (charge)
@@ -28,12 +28,12 @@ PEOPLE_N_SENTCD = FALSE # gente no sentenciada en primer cargo criminal
 PEOPLE_DESCR_NA = TRUE  # gente sin descripción del primer cargo criminal
 
 # Tables to clean
-CASEARREST    = TRUE
-CHARGE        = TRUE
-COMPAS        = TRUE
-JAILHISTORY   = TRUE
+CASEARREST    = FALSE
+CHARGE        = FALSE
+COMPAS        = FALSE
+JAILHISTORY   = FALSE
 PEOPLE        = TRUE
-PRISONHISTORY = TRUE
+PRISONHISTORY = FALSE
 
 
 ################## DO NOT TOUCH FROM HERE ON ################## 
@@ -257,20 +257,20 @@ if(CHARGE){
 }
 if(PEOPLE){
   if(PEOPLE_N_SENTCD){# people not sentenced in first crime ~ 742 rows (P_NS)
-people %>% filter(!is.na(c_jail_in))
-}
-
-if(PEOPLE_NEG_RECD){# people analized without crime registered (or not sentenced) ~716 rows (subset of P_NS)
-people %>% filter(is_recid != -1)
-}
-
-if(PEOPLE_NEG_DECL){# people with negative decile score ~ 15 rows (subset of P_NS)
-people %>% filter(decile_score > 0)
-}
-
-if(PEOPLE_DESCR_NA){# people with no first crime charge description ~ 749 rows
-people %>% filter(!is.na(c_charge_desc))
-}
+    people <- people %>% filter(!is.na(c_jail_in))
+  }
+  
+  if(PEOPLE_NEG_RECD){# people analized without crime registered (or not sentenced) ~716 rows (subset of P_NS)
+    people <- people %>% filter(is_recid != -1)
+  }
+  
+  if(PEOPLE_NEG_DECL){# people with negative decile score ~ 15 rows (subset of P_NS)
+    people <- people %>% filter(decile_score > 0)
+  }
+  
+  if(PEOPLE_DESCR_NA){# people with no first crime charge description ~ 749 rows
+    people <- people %>% filter(!is.na(c_charge_desc))
+  }
 }
 
 # ====== CLEAN TABLES ======
@@ -319,7 +319,7 @@ if(SAVE){
     if(CASEARREST){   write.csv(casearrest,    paste0(path, 'casearrest_cl'   , form))}
     if(CHARGE){       write.csv(charge,        paste0(path, 'charge_cl'       , form))}
     if(JAILHISTORY){  write.csv(jailhistory,   paste0(path, 'jailhistory_cl'  , form))}
-    if(PEOPLE){       write.csv(people,        paste0(path, 'people_clean'    , form))}
+    if(PEOPLE){       write.csv(people,        paste0(path, 'people_cl'       , form))}
     if(PRISONHISTORY){write.csv(prisonhistory, paste0(path, 'prisonhistory_cl', form))}
     if(COMPAS){
       if(C_BY_ASS){
