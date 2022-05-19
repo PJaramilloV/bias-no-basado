@@ -15,7 +15,7 @@ C_BY_ASS = TRUE
 # Column eliminations
 NULL_NA = TRUE  # columnas nulas
 PADDING = TRUE  # columnas con información no utilizable
-HUMAN_R = TRUE  # columnas para lectura por humanos
+HUMAN_R = FALSE  # columnas para lectura por humanos
 
 # Row cleaning
 # (charge)
@@ -316,18 +316,21 @@ if(SAVE){
   form = '.csv'
   
   {
-    write.csv(casearrest,        paste0(path, 'casearrest_cl'     , form))
-    write.csv(charge,            paste0(path, 'charge_cl'         , form))
-    write.csv(jailhistory,       paste0(path, 'jailhistory_cl'    , form))
-    write.csv(people,            paste0(path, 'people_clean'      , form))
-    write.csv(prisonhistory,     paste0(path, 'prisonhistory_cl'  , form))
-    if(C_BY_ASS){
-      write.csv(compas_violence, paste0(path, 'compas_violence_cl', form))
-      write.csv(compas_recid,    paste0(path, 'compas_recid_cl'   , form))
-      write.csv(compas_fail_app, paste0(path, 'compas_failure_cl' , form))
-    } else {
-      write.csv(compas,          paste0(path, 'compas_cl'         , form))
+    if(CASEARREST){   write.csv(casearrest,    paste0(path, 'casearrest_cl'   , form))}
+    if(CHARGE){       write.csv(charge,        paste0(path, 'charge_cl'       , form))}
+    if(JAILHISTORY){  write.csv(jailhistory,   paste0(path, 'jailhistory_cl'  , form))}
+    if(PEOPLE){       write.csv(people,        paste0(path, 'people_clean'    , form))}
+    if(PRISONHISTORY){write.csv(prisonhistory, paste0(path, 'prisonhistory_cl', form))}
+    if(COMPAS){
+      if(C_BY_ASS){
+        write.csv(compas_violence, paste0(path, 'compas_violence_cl', form))
+        write.csv(compas_recid,    paste0(path, 'compas_recid_cl'   , form))
+        write.csv(compas_fail_app, paste0(path, 'compas_failure_cl' , form))
+      } else {
+        write.csv(compas,          paste0(path, 'compas_cl'         , form))
+      }
     }
+    
   }
   rm(path)
   rm(form)
@@ -366,11 +369,6 @@ if(RESTORE){
   }
   rm(C_BY_ASS)
 }
-
-
-
-
-
 
 
 
