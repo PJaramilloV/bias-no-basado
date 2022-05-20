@@ -7,7 +7,7 @@
 SAVE = TRUE
 
 # Restore tables to workspace
-RESTORE = TRUE    # (arroja warning del init, no afecta la limpieza)
+RESTORE = FALSE    # (arroja warning del init, no afecta la limpieza)
 
 # Eliminate duplicated people
 DUP_PPL = TRUE
@@ -295,7 +295,8 @@ if(RM_DATES || DATE_T_NUM){
       casearrest <- casearrest %>% 
                     mutate_at(dates_ca, as.Date, format = "%Y-%m-%d") %>% # str to Date
                     mutate_at(dates_ca, as.numeric) %>%                   # Date to int
-                    mutate(across(dates_ca, ~ round((.x + 18342)/(36604), 5)))      # Normalize
+                    mutate(across(dates_ca, ~ round((.x + 18342)/(36604), 5)))   # Normalize
+                    
     }
     
 
@@ -331,7 +332,11 @@ if(RM_DATES || DATE_T_NUM){
       people <- people %>% 
         mutate_at(dates_pe, as.Date, format = "%Y-%m-%d") %>% 
         mutate_at(dates_pe, as.numeric) %>% 
-        mutate(across(dates_pe, ~ round((.x + 18342)/(36604), 5))) 
+        mutate(across(dates_pe, ~ round((.x + 18342)/(36604), 5))) %>%
+        mutate(c_offense_date = ifelse(is.na(c_offense_date), c_arrest_date, c_offense_date ) ) %>%
+        select(-c_arrest_date) %>%
+        mutate(c_jail_in  = ifelse(is.na(c_jail_in) , compas_screening_date, c_jail_in) ) %>%
+        mutate(c_jail_out = ifelse(is.na(c_jail_out), compas_screening_date, c_jail_out) )
     }
     
     
