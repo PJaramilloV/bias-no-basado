@@ -7,7 +7,7 @@
 SAVE = TRUE
 
 # Restore tables to workspace
-RESTORE = FALSE
+RESTORE = TRUE    # (arroja warning del init, no afecta la limpieza)
 
 # Eliminate duplicated people
 DUP_PPL = TRUE
@@ -252,7 +252,7 @@ if(HUMAN_R){
   eliminate_ph <- c(eliminate_ph, append_c)
 }
 
-# ====== Date Options
+# ====== Date Options ======
 if(RM_DATES || DATE_T_NUM){
   
   ## Casearrest -----
@@ -269,7 +269,7 @@ if(RM_DATES || DATE_T_NUM){
 
   ## People ---------
   dates_pe <- c("dob", "compas_screening_date", "c_jail_in", 
-                "c_jail_out", "c_offense_date", "r_offense_date",
+                "c_jail_out", "c_arrest_date", "c_offense_date", "r_offense_date",
                 "r_jail_in", "r_jail_out", "vr_offense_date")
 
   ## Prisonhistory -----
@@ -295,7 +295,7 @@ if(RM_DATES || DATE_T_NUM){
       casearrest <- casearrest %>% 
                     mutate_at(dates_ca, as.Date, format = "%Y-%m-%d") %>% # str to Date
                     mutate_at(dates_ca, as.numeric) %>%                   # Date to int
-                    mutate(across(dates_ca, ~ (.x + 18342)/(36604)))      # Normalize
+                    mutate(across(dates_ca, ~ round((.x + 18342)/(36604), 5)))      # Normalize
     }
     
 
@@ -304,7 +304,7 @@ if(RM_DATES || DATE_T_NUM){
       charge <- charge %>% 
         mutate_at(dates_ch, as.Date, format = "%Y-%m-%d") %>%
         mutate_at(dates_ch, as.numeric) %>%
-        mutate(across(dates_ch, ~ (.x + 18342)/(36604)))
+        mutate(across(dates_ch, ~ round((.x + 18342)/(36604), 5)))
     }
     
 
@@ -313,7 +313,7 @@ if(RM_DATES || DATE_T_NUM){
       compas <- compas %>% 
         mutate_at(dates_co, as.Date, format = "%Y-%m-%d") %>%
         mutate_at(dates_co, as.numeric) %>%
-        mutate(across(dates_co, ~ (.x + 18342)/(36604)))
+        mutate(across(dates_co, ~ round((.x + 18342)/(36604), 5)))
     }
     
     
@@ -322,7 +322,7 @@ if(RM_DATES || DATE_T_NUM){
       jailhistory <- jailhistory %>% 
         mutate_at(dates_jh, as.Date, format = "%Y-%m-%d") %>%
         mutate_at(dates_jh, as.numeric) %>%
-        mutate(across(dates_jh, ~ (.x + 18342)/(36604)))
+        mutate(across(dates_jh, ~ round((.x + 18342)/(36604), 5)))
     }
     
 
@@ -331,7 +331,7 @@ if(RM_DATES || DATE_T_NUM){
       people <- people %>% 
         mutate_at(dates_pe, as.Date, format = "%Y-%m-%d") %>% 
         mutate_at(dates_pe, as.numeric) %>% 
-        mutate(across(dates_pe, ~ (.x + 18342)/(36604))) 
+        mutate(across(dates_pe, ~ round((.x + 18342)/(36604), 5))) 
     }
     
     
@@ -340,14 +340,13 @@ if(RM_DATES || DATE_T_NUM){
       prisonhistory <- prisonhistory %>% 
         mutate_at(dates_ph, as.Date, format = "%Y-%m-%d") %>%
         mutate_at(dates_ph, as.numeric) %>%
-        mutate(across(dates_ph, ~ (.x + 18342)/(36604)))
+        mutate(across(dates_ph, ~ round((.x + 18342)/(36604), 5)))
     }
     
   }
   
   rm(dates_ca, dates_ch, dates_co, dates_jh, dates_pe, dates_ph)
 } 
-
 
 # ====== Row Cleaning Filters ======
 if(CHARGE){
