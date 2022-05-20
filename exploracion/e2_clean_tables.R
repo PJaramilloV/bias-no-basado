@@ -1,3 +1,6 @@
+# \/\/  In case of error try reseting workspace data
+#source("init.R")
+
 # Configurations ======
 
 # Save tables as CSV
@@ -11,6 +14,11 @@ DUP_PPL = TRUE
 
 # Separate COMPAS by assessment
 C_BY_ASS = TRUE
+
+# Date options
+RM_DATES   = FALSE # Eliminar columnas con fechas
+DATE_T_NUM = TRUE  # Pasar fechas a numeros normalizados
+
 
 # Column eliminations
 NULL_NA = TRUE  # columnas nulas
@@ -244,6 +252,102 @@ if(HUMAN_R){
   eliminate_ph <- c(eliminate_ph, append_c)
 }
 
+# ====== Date Options
+if(RM_DATES || DATE_T_NUM){
+  
+  ## Casearrest -----
+  dates_ca <- c("arrest_date")
+
+  ## Charge ---------
+  dates_ch <- c("offense_date", "date_charge_filed") 
+
+  ## Compas ---------
+  dates_co <- c("screening_date")
+
+  ## Jailhistory -----
+  dates_jh <- c("dob", "in_custody", "out_custody")
+
+  ## People ---------
+  dates_pe <- c("dob", "compas_screening_date", "c_jail_in", 
+                "c_jail_out", "c_offense_date", "r_offense_date",
+                "r_jail_in", "r_jail_out", "vr_offense_date")
+
+  ## Prisonhistory -----
+  dates_ph <- c("dob", "in_custody", "out_custody")
+
+  if(RM_DATES){
+    eliminate_ca <- c(eliminate_ca, dates_ca)
+    eliminate_ch <- c(eliminate_ch, dates_ch)
+    eliminate_co <- c(eliminate_co, dates_co)
+    eliminate_jh <- c(eliminate_jh, dates_jh)
+    eliminate_pe <- c(eliminate_pe, dates_pe)
+    eliminate_ph <- c(eliminate_ph, dates_ph)
+
+  } else if(DATE_T_NUM){
+    # Convert date to number
+    # Note: normalization is (date - min_date)/(max_date - min_date)
+    #       min_date: 1919-10-14 (--> -18432)
+    #       max_date: 2020-01-01 (-->  18262)
+    #       max_date - min_date = 36604
+    
+    ## Casearrest -----
+    if(CASEARREST){
+      casearrest <- casearrest %>% 
+                    mutate_at(dates_ca, as.Date, format = "%Y-%m-%d") %>% # str to Date
+                    mutate_at(dates_ca, as.numeric) %>%                   # Date to int
+                    mutate(across(dates_ca, ~ (.x + 18342)/(36604)))      # Normalize
+    }
+    
+
+    ## Charge ---------
+    if(CHARGE){
+      charge <- charge %>% 
+        mutate_at(dates_ch, as.Date, format = "%Y-%m-%d") %>%
+        mutate_at(dates_ch, as.numeric) %>%
+        mutate(across(dates_ch, ~ (.x + 18342)/(36604)))
+    }
+    
+
+    ## Compas ---------
+    if(COMPAS){
+      compas <- compas %>% 
+        mutate_at(dates_co, as.Date, format = "%Y-%m-%d") %>%
+        mutate_at(dates_co, as.numeric) %>%
+        mutate(across(dates_co, ~ (.x + 18342)/(36604)))
+    }
+    
+    
+    ## Jailhistory -----
+    if(JAILHISTORY){
+      jailhistory <- jailhistory %>% 
+        mutate_at(dates_jh, as.Date, format = "%Y-%m-%d") %>%
+        mutate_at(dates_jh, as.numeric) %>%
+        mutate(across(dates_jh, ~ (.x + 18342)/(36604)))
+    }
+    
+
+    ## People ---------
+    if(PEOPLE){
+      people <- people %>% 
+        mutate_at(dates_pe, as.Date, format = "%Y-%m-%d") %>% 
+        mutate_at(dates_pe, as.numeric) %>% 
+        mutate(across(dates_pe, ~ (.x + 18342)/(36604))) 
+    }
+    
+    
+    ## Prisonhistory -----
+    if(PRISONHISTORY){
+      prisonhistory <- prisonhistory %>% 
+        mutate_at(dates_ph, as.Date, format = "%Y-%m-%d") %>%
+        mutate_at(dates_ph, as.numeric) %>%
+        mutate(across(dates_ph, ~ (.x + 18342)/(36604)))
+    }
+    
+  }
+  
+  rm(dates_ca, dates_ch, dates_co, dates_jh, dates_pe, dates_ph)
+} 
+
 
 # ====== Row Cleaning Filters ======
 if(CHARGE){
@@ -277,33 +381,27 @@ if(PEOPLE){
 {
 if(CASEARREST){
   casearrest <- casearrest %>% select(-eliminate_ca)
-  rm(eliminate_ca)
 }
 if(CHARGE){
   charge <- charge %>% select(-eliminate_ch)
-  rm(eliminate_ch)
 }
 if(COMPAS){
   compas <- compas %>% select(-eliminate_co)
-  rm(eliminate_co)
 }
 if(JAILHISTORY){
   jailhistory <- jailhistory %>% select(-eliminate_jh)
-  rm(eliminate_jh)
 }
 if(PEOPLE){
   people <- people %>% select(-eliminate_pe)
-  rm(eliminate_pe)
 }
 if(PRISONHISTORY){
   prisonhistory <- prisonhistory %>% select(-eliminate_ph)
-  rm(eliminate_ph)
 }
 gc()
 }
 
 # ====== Separate COMPAS ======
-if(C_BY_ASS){
+if(C_BY_ASS && COMPAS){
   compas_violence <- compas %>% filter(type_of_assessment == 'Risk of Violence') %>% select(-c("type_of_assessment"))
   compas_recid    <- compas %>% filter(type_of_assessment == 'Risk of Recidivism') %>% select(-c("type_of_assessment"))
   compas_fail_app <- compas %>% filter(type_of_assessment == 'Risk of Failure to Appear') %>% select(-c("type_of_assessment"))
@@ -350,8 +448,14 @@ if(RESTORE){
   rm(CHARGE)
   rm(CHARGE_DEGREE_X)
   rm(CHARGE_DESCR_NA)
-  rm(COMPAS)
+  rm(DATE_T_NUM)
   rm(DUP_PPL)
+  rm(eliminate_ca)
+  rm(eliminate_ch)
+  rm(eliminate_co)
+  rm(eliminate_jh)
+  rm(eliminate_pe)
+  rm(eliminate_ph)
   rm(HUMAN_R)
   rm(JAILHISTORY)
   rm(NULL_NA)
@@ -363,11 +467,13 @@ if(RESTORE){
   rm(PEOPLE_NEG_RECD)
   rm(PRISONHISTORY)
   rm(RESTORE)
+  rm(RM_DATES)
   rm(SAVE)
-  if(C_BY_ASS){
+  if(C_BY_ASS && COMPAS){
     rm(compas)
   }
   rm(C_BY_ASS)
+  rm(COMPAS)
 }
 
 
