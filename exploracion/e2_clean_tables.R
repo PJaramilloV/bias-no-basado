@@ -1,4 +1,4 @@
-# \/\/  In case of error try reseting workspace data
+ # \/\/  In case of error try reseting workspace data
 #source("init.R")
 
 # Configurations ======
