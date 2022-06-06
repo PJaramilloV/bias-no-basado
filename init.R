@@ -34,3 +34,55 @@ rm(db)
 rm(summary)
 
 
+
+
+# Limpieza de tablas =========================================================
+
+
+# tabla de personas con sus IDs
+# se cruzan las tablas de historia carcelaria (jail) y penal (prison) para enlazar
+# los id's de las personas con su nombre completo y fecha de nacimiento
+#     se filtran person_id != id, pues son personas que aparecen duplicadas (3 personas)
+#       con esos valores eliminados se puede copiar el id al person id pues son identicos
+#       entonces se tiene una tabla que enlaza unicamente a una persona con 1 id
+#       para asi cruzar esta tabla con tablas de arresto para graficar segun raza
+people_partial_id <- people %>%
+  left_join(jailhistory %>%
+              distinct(first, last, dob, person_id) %>%
+              select("first", "last", "dob", "person_id"), 
+            by=c("first", "last", "dob")) %>%
+  left_join(prisonhistory %>%  distinct(first, last, dob, person_id) %>%
+              select("first", "last", "dob", "person_id"), 
+            by=c("first", "last", "dob")) %>%
+  mutate(person_id.x = ifelse(is.na(person_id.x), person_id.y, person_id.x)) %>%
+  relocate(person_id = person_id.x) %>%
+  select(-person_id.y) %>% 
+  filter(person_id == id | is.na(person_id))
+
+# la gente que no tiene person_id es porque no estaban en jailhistory/prisonhistory
+people_not_sentenced <- people_partial_id %>%
+  filter(is.na(person_id))
+
+# Lista de cargos sospechosos compilada a mano
+flimsy_charges = c("Infraction", "Municipal (Speed Not Indicated)", 
+                   "Speeding (Speed not Indicated)", 
+                   "Speeding (Speed Not Indicated)", 
+                   "Unlawful Speed / Speed Not Indicated", "Loitering", NA
+)
+
+
+people_w_id <- people_partial_id %>%
+  mutate(person_id = ifelse(is.na(person_id), id, person_id))
+
+
+# tabla de los crimenes con razas appendadas
+# filtro para id's <NA> es porque no cometieron crimenes y por lo tanto no aparecen en jailhistory/charge 
+people_charge <- charge %>%
+  left_join(people_w_id %>% 
+              select(race, person_id), 
+            by=c("person_id")) %>%
+  distinct()
+
+rm(people_not_sentenced)
+rm(people_partial_id)
+rm(people_w_id)

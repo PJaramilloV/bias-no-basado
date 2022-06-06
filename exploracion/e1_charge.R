@@ -1,26 +1,6 @@
 source("init.R")
 
-# Estructuras de datos =========================================================
 
-# Lista de cargos sospechosos compilada a mano
-flimsy_charges = c("Infraction", "Municipal (Speed Not Indicated)", 
-                   "Speeding (Speed not Indicated)", 
-                   "Speeding (Speed Not Indicated)", 
-                   "Unlawful Speed / Speed Not Indicated", "Loitering", NA
-                   )
-
-
-people_w_id <- people_partial_id %>%
-                  mutate(person_id = ifelse(is.na(person_id), id, person_id))
-
-
-# tabla de los crimenes con razas appendadas
-# filtro para id's <NA> es porque no cometieron crimenes y por lo tanto no aparecen en jailhistory/charge 
-people_charge <- charge %>%
-                  left_join(people_w_id %>% 
-                              select(race, person_id), 
-                            by=c("person_id")) %>%
-                  distinct()
 
 
 # Exploracion ==================================================================

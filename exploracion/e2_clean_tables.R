@@ -294,8 +294,10 @@ if(RM_DATES || DATE_T_NUM){
     if(CASEARREST){
       casearrest <- casearrest %>% 
                     mutate_at(dates_ca, as.Date, format = "%Y-%m-%d") %>% # str to Date
+                    filter(arrest_date <= '2016-05-23') %>%               # Fecha maxima de arresto: fecha publicación paper
                     mutate_at(dates_ca, as.numeric) %>%                   # Date to int
-                    mutate(across(dates_ca, ~ round((.x + 18342)/(36604), 5)))   # Normalize
+                    mutate(across(dates_ca, ~ round((.x + 18342)/(36604), 5)))  # Normalize
+
                     
     }
     

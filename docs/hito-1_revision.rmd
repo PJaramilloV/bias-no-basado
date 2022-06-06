@@ -1,0 +1,526 @@
+---
+title: "Hito 1 Grupo 8"
+author: Vicente González, Rodrigo Iturrieta, Pablo Jaramillo, Cristian Lillo y Benjamín
+  Valenzuela
+date: "Abril 2022"
+output:
+  html_document:
+    theme: default
+    toc: yes
+  pdf_document:
+    toc: yes
+---
+
+
+## Exploración de datos
+
+### Acercamiento inicial
+
+Primero cargamos los datos desde la base de datos de [COMPAS](https://github.com/propublica/compas-analysis). Esta contiene 7 tablas:
+
+1.  `casearrest`: Observaciones sobre los cargos de arrestos de forma sucinta y sin detalles sobre el cargo.
+2.  `charge`: Observaciones de cargos criminales/infracciones en detalle, la diferencia entre esta y la tabla `casearrest` es que en esta los cargos no se agrupan.
+3.  `compas`: Observaciones de evaluaciones de un cierto tipo de métrica de COMPAS.
+4.  `jailhistory`: Observaciones sobre el periodo carcelario de cada persona enviada a cárcel por el crimen que llevó a cabo el análisis de COMPAS. Solo se consideran periodos que tienen fin, las sentencias que continuaron después de la fecha de rescate de los datos están omitidos.
+5.  `people`: Cada observación es un resumen personal del historial de COMPAS del individuo. Notando nombre, edad, genero, etnia, crimen que llevó al análisis de COMPAS y en caso de existir, el crimen reincidente (o segundo crimen).
+6.  `prisonhistory`: Similar a la tabla de `jailhistory` pero es de datos que involucran periodo de prisión en lugar de cárcel.
+7.  `summary`: Esta no presenta datos útiles para la exploración de datos, por lo que se ha omitido.
+
+```{r message = FALSE, warning = FALSE}
+# Script para cargar data al workspace
+
+# Descomentar estas dos líneas para instalar los paquete
+# install.packages("RSQLite")
+# install.packages("here")
+library(RSQLite)
+library(rstudioapi)
+library(tidyverse)
+library(utils)
+library(here)
+library(scales)
+
+# Establecer como working directory al directorio con el archivo ".here"
+setwd(here())
+
+# getwd() # Verificar que se estableció correctamente
+
+# Cargar BD, la cual contiene 7 tablas:
+db <- dbConnect(dbDriver("SQLite"), dbname = "compas.db")
+# dbListTables(db)
+
+#   tabla     |           linea de carga          | dimensiones[fila,columna]
+casearrest    <- dbReadTable(db, "casearrest")    # [128183,  8]
+charge        <- dbReadTable(db, "charge")        # [148086, 15]
+compas        <- dbReadTable(db, "compas")        # [37578,  21]
+jailhistory   <- dbReadTable(db, "jailhistory")   # [22111,   7]
+people        <- dbReadTable(db, "people")        # [11757,  41]
+prisonhistory <- dbReadTable(db, "prisonhistory") # [4945,    9]
+summary       <- dbReadTable(db, "summary")       # [0,      26] # no data
+
+dbDisconnect(db)
+rm(db)
+rm(summary)
+```
+
+Modificamos la tabla **people** para agrupar a las personas según su etnia y sexo. Así obtenemos los promedios y medianas de las variables *edad*, *tiempo encarcelados* y *decil de riesgo de reinicidencia*.
+
+Podemos notar que los hombres afroamericanos y caucásicos poseen las mayores cantidades de arrestos, con 4697 y 3117 respectivamente. Sin embargo, son los hombres afroamericanos los que pasan mayor tiempo encarcelados en promedio, junto con los hombres y mujeres asiáticos.
+
+```{r message = FALSE}
+people %>%
+       group_by(race, sex) %>%
+       summarize(numero_total = n(),
+                 promedio_edad = round(mean(age), digits = 2),
+                 mediana_edad = median(age),
+                 promedio_tiempo_carcel = round(mean(as.Date(c_jail_out)
+                                               - as.Date(c_jail_in),
+                                               na.rm = TRUE), digits = 2),
+                 mediana_tiempo_carcel = median(as.Date(c_jail_out)
+                                                - as.Date(c_jail_in),
+                                                na.rm = TRUE),
+                 promedio_decile = round(mean(decile_score), digits = 2),
+                 mediana_decile = median(decile_score),
+                 cantidad_decile_10 = sum(decile_score == 10))
+```
+
+### Muestra de datos
+
+Las tablas del proyecto tienen mas de 60 atributos en total, por lo que optará por mostrar los atributos más relevantes e interpretables. Notese que varios de estos atributos están presentes en varias tablas por lo que solo se mostrarán una vez. Se muestran entonces varios gráficos de conteo para entregar una idea general de los atributos presentes en la data y sus valores
+
+#### Tabla **Casearrest**
+
+Arrestos de los analizados por COMPAS a lo largo del tiempo. Cabe recordar que los datos se componen de personas analizadas por COMPAS durante los años 2013 y 2014. A esta gente se le realizó un seguimiento hasta Mayo de 2016 año en el que se recopilaron los datos. Fechas en las tablas que superen a esta ultima mencionada puede tratarse de acuerdos alcanzados en corte.
+```{r}
+casearrest %>%
+  ggplot(aes(x=as.Date(arrest_date, format="%Y-%m-%d") )) + 
+    geom_histogram(bins = 40) +
+    labs(x="año de crimen", y="cantidad de arrestos", 
+         title="Arrestos a gente analizada por COMPAS a lo largo del tiempo")
+```
+
+#### Tabla **Charge**
+
+Cuantos cargos hay por grado, cada grado pertenece a una categoría entre felonia (delito grave), misdemeanor (delito) o infracciones. Las **felonias** son los cargos que comienzan con **F**, los **misdemeanor** son los cargos que comienzan con **M**, el resto son **infracciones**, para cada grado de mismo prefijo mientras menor sea el numero más severo es el crimen, por lo tanto una felonía de primer grado (F1) es más severa que otra felonía de segundo grado (F2).
+```{r}
+charge %>% 
+  ggplot(aes(x=charge_degree)) +
+    geom_bar() + 
+    labs(y="numero de instancias", x ="grado de cargo", 
+         title="Numero de cargos por grado")
+```
+
+Cuantos crímenes se cometieron por las personas analizadas por COMPAS a lo largo del tiempo.
+```{r}
+charge %>%
+  ggplot(aes(x=as.Date(offense_date, format="%Y-%m-%d"))) + 
+    geom_histogram(bins = 40) +
+    labs(x="año de crimen", y="cantidad de crimenes", 
+         title="Crimenes cometidos por gente analizada por COMPAS a lo largo del tiempo")
+```
+
+
+#### Tabla **COMPAS**
+
+En el analisis de COMPAS se evaluan varios tipos de riesgo, los datos contienen en particular "Riesgo de reincidencia criminal", "Riesgo de reincidencia violenta" y "Riesgo de no presentarse en corte". Para gráficar datos pertenecientes al individuo evaluado se filtra por uno de los tipos para no tener información triplicada.
+
+Conteo de estado civil de cada infractor/criminal.
+```{r}
+compas %>%
+  filter(type_of_assessment == "Risk of Violence") %>% # Tipo escogido al azar, es para no tener datos triplicados
+  ggplot(aes(x=marital_status)) +
+    geom_bar() +
+    labs(x="Estado civil", y="Numero de gente", 
+         title="Estado civil de la gente analizada por COMPAS")
+
+```
+
+Conteo del estado de custodia de los infractores/criminales.
+```{r}
+compas %>% 
+  filter(type_of_assessment == "Risk of Violence") %>% # Tipo escogido al azar, es para no tener datos triplicados
+  ggplot(aes(x=custody_status)) +
+    geom_bar() + 
+    labs(x="Estado de custodia", y="Numero de gente", 
+         title="Estado custodial de la gente analizada por COMPAS")
+
+```
+
+Conteo del nivel de supervisión recomendado por COMPAS para los analizados.
+```{r}
+compas %>%
+  filter(type_of_assessment == "Risk of Violence") %>% # Tipo escogido al azar, es para no tener datos triplicados
+  ggplot(aes(x=rec_supervision_level_text)) +
+    geom_bar() +
+    labs(x="Nivel de supervisión recomendado", y="Numero de gente", 
+         title="Nivel de supervisión recomendado para la gente analizada por COMPAS")
+
+```
+
+Distribución del puntaje crudo del análisis de COMPAS sobre riesgo de reincidencia criminal.
+```{r}
+compas %>%
+  filter(type_of_assessment == "Risk of Recidivism") %>%
+  ggplot(aes(x=raw_score)) +
+    geom_histogram() +
+    labs(x="Puntaje COMPAS", y="Numero de gente", 
+         title="Distribución de puntaje COMPAS sobre 'Riesgo de Reincidencia' ") 
+```
+
+Distribución del puntaje crudo del análisis de COMPAS sobre riesgo de reincidencia criminal violenta.
+```{r}
+compas %>%
+  filter(type_of_assessment == "Risk of Violence") %>%
+  ggplot(aes(x=raw_score)) +
+    geom_histogram() +
+    labs(x="Puntaje COMPAS", y="Numero de gente", 
+       title="Distribución de puntaje COMPAS sobre 'Riesgo de Reincidencia Violenta' ")
+```
+
+Distribución del puntaje crudo del análisis de COMPAS sobre riesgo de no aparecerse en corte.
+```{r}
+compas %>%
+  filter(type_of_assessment == "Risk of Failure to Appear") %>%
+  ggplot(aes(x=raw_score)) +
+    geom_histogram() +
+    labs(x="Puntaje COMPAS", y="Numero de gente", 
+         title="Distribución de puntaje COMPAS sobre 'Riesgo de fallo de aparecer en corte' ")
+
+```
+
+Distribución de deciles de riesgo de COMPAS.
+```{r}
+compas %>%
+  filter(decile_score > 0) %>%
+  ggplot(aes(x=decile_score)) +
+    geom_bar() +
+    facet_wrap(~ type_of_assessment) +
+    labs(x="Decil COMPAS", y="Numero de gente", 
+       title="Distribución de deciles COMPAS por tipo de analisis ")
+```
+
+#### Tabla **Jailhistory**
+
+Como esta tabla consta del registro simple del periodo carcelario del analizado posterior a su análisis COMPAS, esta tabla consta de la fecha de nacimiento del individuo, su fecha de ingreso y salida. Dada la naturaleza del estudio sobre reincidencia todos los datos cuentan con una fecha de salida. Acá podemos ver la fecha de salida versus la fecha de entrada con los puntos pintados por la edad del individuo a la fecha de entrar.
+```{r}
+jailhistory %>%
+  ggplot(aes(x=as.Date(in_custody, format = "%Y-%m-%d") , y=as.Date(out_custody, format = "%Y-%m-%d"), color=(as.numeric(as.Date(in_custody, format = "%Y-%m-%d") - as.Date(dob, format = "%Y-%m-%d"), unit="weeks") /52.25 ) )) +
+    geom_point( alpha=0.4) +
+    labs(x="fecha de ingreso a carcel", y="fecha de salida de carcel", title="Fecha de entrada versus salida de carcel" ) +
+    scale_color_continuous(name="edad al ingresar")
+```
+
+#### Tabla **Prisonhistory**
+
+La tabla de historia de prisión es similar a la de historia carcelaria, se gráfica lo mismo que en el gráfico anterior.
+```{r}
+prisonhistory %>%
+  ggplot(aes(x=as.Date(in_custody, format = "%Y-%m-%d") , y=as.Date(out_custody, format = "%Y-%m-%d"), color=(as.numeric(as.Date(in_custody, format = "%Y-%m-%d") - as.Date(dob, format = "%Y-%m-%d"), unit="weeks") /52.25 ) )) +
+    geom_point( alpha=0.4) +
+    labs(x="fecha de ingreso a prision", y="fecha de salida de prision", title="Fecha de entrada versus salida de prision" ) +
+    scale_color_continuous(name="edad al ingresar")
+```
+
+#### Tabla **People**
+
+Numero de cargos criminales cometidos antes del cargo que condujo al analisis de COMPAS.
+```{r}
+people %>% 
+  ggplot(aes(x=priors_count)) + 
+    geom_bar() +
+    labs(x="numero de cargos previos al crimen que llevó al analisis COMPAS", y="Numero de gente",
+         title="Cargos previos al analisis de COMPAS")
+```
+
+Conteo de cuantas personas son o no son reincidentes, notar que existe una tercera opción para gente que fue analizada pero no fue sentenciada/encontrada culpable de su infracción/crimen.
+```{r}
+lookup =  c("-1"="No Sentenciado", "0"= "No", "1"="Si")
+people %>%
+  group_by(is_recid) %>%
+  summarize(n=n()) %>%
+  mutate(perc = n/sum(n)) %>%
+  mutate(is_recid = as.character(is_recid) ) %>%
+  mutate(is_recid = recode(is_recid, !!!lookup )) %>%
+  ggplot(aes(x="", y=n, fill=is_recid)) +
+    geom_col() + 
+    geom_text(aes(label = percent(round(perc,3))), position = position_stack(vjust = 0.5)) +
+    coord_polar("y") +
+    scale_fill_discrete("es reincidente?")+
+    theme_void() + 
+    ggtitle("Porcentajes de reincidencia")
+rm(lookup)
+```
+
+Conteo de sexo de los individuos analizados por COMPAS.
+```{r}
+people %>%
+  group_by(sex) %>%
+  summarize(n=n()) %>%
+  mutate(perc = n/sum(n)) %>%
+  ggplot(aes(x="", y=n , fill=sex)) + 
+    geom_col() + 
+    geom_text(aes(label = percent(round(perc,3))), position = position_stack(vjust = 0.5)) +
+    coord_polar("y") +
+    scale_fill_discrete("Sexo")+
+    theme_void() + 
+    ggtitle("Distribución de sexo")
+```
+
+Conteo de etnias de los individuos analizados por COMPAS.
+```{r}
+people %>%
+  group_by(race) %>%
+  summarize(n=n()) %>%
+  mutate(perc = n/sum(n)) %>%
+  ggplot(aes(x="", y=n , fill=race)) + 
+  geom_col() + 
+  geom_text(aes(label = percent(round(perc,3))), position = position_stack(vjust=0.5)) +
+  coord_polar("y") +
+  scale_fill_discrete("etnia")+
+  theme_void() + 
+  ggtitle("Distribución de etnia")
+```
+
+
+### Análisis centrado en la tabla **people**
+
+#### Estructuras de datos
+
+Se cruza la información de las tablas de historia carcelaria (jail) e historia penal (prison) para enlazar los id de las personas con su nombre completo y su fecha de nacimiento.
+
+Se filtran además person_id != id, pues son las personas que aparecen duplicadas. En este caso fueron solamente 3. Con esos valores eliminados se puede copiar el id al person_id pues son idénticos.
+
+Se tiene entonces una tabla que enlaza únicamente a una persona con 1 id y así podemos cruzar la información de esta tabla con la tabla de arresto para graficar según etnia.
+
+```{r}
+# Tabla de personas con sus IDs
+
+people_partial_id <- people %>%
+  left_join(jailhistory %>%
+              distinct(first, last, dob, person_id) %>%
+              select("first", "last", "dob", "person_id"),
+            by=c("first", "last", "dob")) %>%
+  left_join(prisonhistory %>%  distinct(first, last, dob, person_id) %>%
+              select("first", "last", "dob", "person_id"),
+            by=c("first", "last", "dob")) %>%
+  mutate(person_id.x = ifelse(is.na(person_id.x), person_id.y, person_id.x)) %>%
+  relocate(person_id = person_id.x) %>%
+  select(-person_id.y) %>%
+  filter(person_id == id | is.na(person_id))
+
+# La gente que no tiene person_id es porque no estaban en
+# jailhistory/prisonhistory
+
+people_not_sentenced <- people_partial_id %>% filter(is.na(person_id))
+```
+
+#### Gráficos
+
+Comenzaremos viendo la cantidad de personas según su decil de COMPAS, donde además separaremos según su sexo en gráficos distintos. Podemos ver una clara tendencia a que la cantidad de personas disminuya por decil. También es visible que esta diferencia es más pronunciada en el gráfico de las mujeres.
+
+Es necesario notar también que la cantidad de hombres corresponde a aproxidamente el cuádruple que la cantidad de mujeres.
+
+```{r}
+people %>%
+  filter(decile_score > 0) %>%
+  ggplot(aes(x = decile_score, fill = sex)) +
+  geom_bar() +
+  facet_wrap(~ sex) +
+  scale_x_continuous(breaks = pretty_breaks(10)) +
+  labs(title = "COMPAS decile score distribution by sex",
+       x = "decile score", y = "number of people") +
+  theme(legend.position = "none")
+```
+
+Mostramos a continuación un gráfico con la cantidad de personas analizadas por COMPAS, distribuyéndolas en el gráfico según su etnia. Notamos en los datos una alta cantidad de gente afroamericana, seguida de personas caucásicas e hispánicas. También existe un muy bajo porcentaje de asiáticos y nativos americanos.
+
+```{r}
+people %>%
+  filter(decile_score > 0) %>%
+  group_by(race) %>%
+  mutate(count = n()) %>%
+  ggplot(aes(x = reorder(race, -count), fill = race)) +
+  geom_bar() +
+  labs(title = "Number of analysed people by race",
+       x = "decile score", y = "number of people") +
+  theme(legend.position = "none")
+```
+
+Volviendo a revisar el decil de COMPAS, pero separando ahora por etnia, es visible que existe una clara tendencia a disminuir la cantidad de persona a medida que avanzan los deciles, salvo para afroamericanos y nativos americanos. Es especialmente preocupante el primero pues se muestra una cantidad casi pareja en todos sus deciles.
+
+```{r}
+people %>%
+  filter(decile_score > 0) %>%
+  ggplot(aes(x=decile_score, fill=race)) + 
+  geom_bar() +
+    facet_wrap(~ race) + 
+    scale_x_continuous(breaks= pretty_breaks(10)) +
+    labs(title="COMPAS decile score distribution by race",
+         x="decile score", y="number of people") +
+    theme(legend.position = "none")
+```
+
+Ahora mostraremos la cantidad de personas que vuelven a cometer un crimen y cuántas no, agrupándolas según su decil. El gráfico generado nos muestra una relación inversa entre quienes no reinciden en cometer crímenes y su decil correspondiente, es decir, a medida que aumentan los deciles disminye la cantidad de personas que vuelven a cometer algún crimen.
+
+```{r}
+people %>%
+  filter(decile_score > 0) %>%
+  filter(!is.na(c_arrest_date)) %>%
+  filter(is_recid != -1) %>%
+  mutate(decile_score = as.character(decile_score)) %>%
+  mutate(num_r_cases = ifelse(is.na(num_r_cases), 0, num_r_cases)) %>%
+  mutate(is_recid = ifelse(is_recid == 0, "No", "Yes")) %>%
+  ggplot(aes(x = reorder(decile_score, as.integer(decile_score)),
+             fill = is_recid)) +
+    geom_bar(position = position_dodge(width=0.5)) +
+    labs(title="Number of re-offencers by decile score",
+         x="decile score", y="Count") + 
+    scale_fill_discrete(name = "re-offender?")
+```
+
+A continuación separaremos la información recién obtenida según etnia, pero consideraremos solamente a afroamericanos, caucásicos, hispánicos y los categorizados como "otros".
+
+Existe una relación incremental de ofensores reincidentes y decil para los afroamericanos. Para el resto de los gráficos se muestra una versión gaussiana. Esto podría interpretarse como un sobrearresto a afroamericanos.
+
+En cambio, para los que no vuelven a cometer un crimen, la relación entre la cantidad de personas y su decil es inversa. La excepción son los afroamericanos, pues para ellos se mantiene casi constante.
+
+```{r}
+people %>%
+  filter(decile_score > 0) %>%
+  filter(!is.na(c_arrest_date) ) %>%
+  filter(is_recid != -1) %>%
+  mutate(race = ifelse(race %in% c("Asian", "Native American"), 
+                       "Other", race )) %>%
+  mutate(decile_score = as.character(decile_score)) %>%
+  mutate(num_r_cases = ifelse(is.na(num_r_cases), 0, num_r_cases)) %>%
+  mutate(is_recid = ifelse(is_recid == 0,"No","Yes")) %>%
+  ggplot(aes(x= reorder(decile_score, as.integer(decile_score)),
+             fill = is_recid)) +
+  geom_bar(position=position_dodge(width=0.5)) +
+  facet_wrap(~ race) +
+  labs(title="Number of re-offencers by decile score",
+       x="decile score", y="Count") + 
+  scale_fill_discrete(name = "re-offender?")
+```
+
+En este gráfico de reincidencia, donde separamos a las personas que han cometido crímenes violentos de las que no, destacamos que quienes cometen más reincidencias de delitos son las personas violentas desde el decil 7 en adelante. También debemos notar que  las personas no violentas suelen presentar una reincidencia similar desde el tercer decil.
+
+```{r}
+people %>%
+  filter(decile_score > 0) %>%
+  filter(!is.na(c_arrest_date) ) %>%
+  filter(is_recid != -1) %>%
+  mutate(decile_score = as.character(decile_score)) %>%
+  mutate(is_violent_recid = ifelse(is_violent_recid == 0,"No","Yes")) %>%
+  ggplot(aes(x= reorder(decile_score, as.integer(decile_score)), 
+             y=num_r_cases, color=is_violent_recid)) + 
+    geom_boxplot(alpha=0.2) +
+    labs(title="Number of re-offences by decile score and violence",
+         x="decile score", y="Re-offences") + 
+    scale_color_discrete(name = "violent individual?") 
+```
+
+Los gráficos que comparan a la gente arrestada con y sin cargo, agrupados por su raza, nos muestra una tendencia similar en ambos gráficos. Los afroamericanos son los más arrestados en ambos casos y con una menor diferencia respecto a los caucásicos cuando existe un cargo para arrestarlos.
+
+```{r}
+people %>%
+  filter(!(is.na(c_charge_desc))) %>%
+  group_by(race) %>%
+  mutate(count = n()) %>%
+  ggplot(aes(x=reorder(race, -count), fill=race)) +
+    geom_bar() +
+    facet_wrap(~ c_charge_desc!="arrest case no charge",
+                labeller=as_labeller(
+                c(`TRUE` = "arrest case with some charge", `FALSE` = "arrest case no charge"))
+               ) +
+    labs(title="Number of people arrested with reason: 'arrest case no charge' by race",
+          x="Race", y="Number of people") +
+    theme(legend.position = "none", axis.text.x = element_text(angle=15, vjust=0.9, hjust=0.55))
+
+```
+
+Separando por etnia, compararemos en dos gráficos a las personas que son o no castigadas con cárcel y prisión. Las proporciones se mantienen similares entre los gráficos, pero es notorio que la probabilidad de terminar en la cárcel es más de 10 veces la probabilidad de que no.
+
+```{r}
+people_partial_id %>%
+  group_by(race) %>%
+  mutate(count = n()) %>%
+  ggplot(aes(x=reorder(race, -count), fill=race)) +
+    geom_bar() +
+    facet_wrap(~ is.na(person_id), 
+               labeller=as_labeller(
+                 c(`TRUE` = "Not sent to jail/prison", `FALSE` = "Sent to jail/prison"))
+    ) +
+    labs(title="Race by whether people were sent to jail or prison",
+         x="Race", y="Number of people") +
+    theme(legend.position = "none", axis.text.x = element_text(angle=15, vjust=0.9, hjust=0.55))
+```
+
+Viendo la importancia de edad y etnia, nos encontramos que las afroamericanos mantienen una distribución de entre 18 a 30 años con varios outsiders que corresponden a personas de la tercera edad. En cambio las demás etnias tienen distribuciones de entre los 20 a los 40 o 45 años, con pocos outsiders correspondientes a personas mayores que dicho rango.
+
+```{r}
+people %>% 
+  ggplot(aes(x=race, y=age)) +
+    geom_boxplot() +
+    labs(title="Age distribution by race",
+         x="Race", y="Age")
+```
+
+Tomando la edad y deciles en comparación ahora, es notorio que en el primer decil las personas de tercera edad muestran una mayor presencia que en el resto. Es en estas otras distribuciones donde la gente joven representa a la mayoría de sus criminales.
+
+```{r}
+people %>%
+  filter(decile_score > 0) %>%
+  ggplot(aes(x=reorder(decile_score, as.integer(decile_score)), y=age)) +
+    geom_point(shape=16,  alpha=0.3, 
+               position = position_jitter(width= 0.3)) + 
+    labs(title="Age by COMPAS decile",
+         x="Decile", y="Age")
+```
+
+### Análisis centrado en la tabla **charge**
+
+#### Estructuras de datos
+
+Para analizar los cargos, sólo nos interesa las personas que han cometido crímenes, para ello filtramos la tabla `people_partial_id` basándonos en el id de la información de `jailhistory` y `charge`.
+
+```{r}
+# Lista de cargos sospechosos compilada a mano
+flimsy_charges <- c("Infraction", "Municipal (Speed Not Indicated)",
+                    "Speeding (Speed not Indicated)",
+                    "Speeding (Speed Not Indicated)",
+                    "Unlawful Speed / Speed Not Indicated", "Loitering", NA
+                   )
+
+
+people_w_id <- people_partial_id %>%
+                  mutate(person_id = ifelse(is.na(person_id), id, person_id))
+
+
+# tabla de los crimenes con razas appendadas
+# filtro para id's <NA> es porque no cometieron crimenes y por lo tanto no aparecen en jailhistory/charge 
+people_charge <- charge %>%
+                  left_join(people_w_id %>% 
+                              select(race, person_id), 
+                            by=c("person_id")) %>%
+                  distinct()
+```
+
+#### Gráficos
+
+Revisando ahora la tabla con los cargos de los delitos, nos enfocaremos en mostrar la diferencia entre la gente arrestada por cargos vagamente demostrados, y el resto, según la etnia. En ambos casos los afroamericanos son ampliamente acusados sobre el resto de las etnias, llegando a ser más del doble que la cantidad de caucásicos en cargos endebles y de poca veracidad. Notemos que este es una observación respecto a la proporción entre etnias
+
+```{r}
+people_charge %>%
+  group_by(race) %>%
+  mutate(count = n()) %>%
+  ggplot(aes(x=reorder(race, -count), fill=race)) +
+    geom_bar() +
+    facet_wrap(~ !(charge %in% flimsy_charges), scale="free_y",
+               labeller=as_labeller(
+                 c(`FALSE` = "Flimsy charges", `TRUE` = "Other charges"))) +
+    labs(title="Number of arrests by race with flimsy charges compared to other cases",
+         x="Race", y="Number of arrests") +
+    theme(legend.position = "none", axis.text.x = element_text(angle=15, vjust=0.9, hjust=0.55))
+```
+
+

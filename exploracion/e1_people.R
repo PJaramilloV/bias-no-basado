@@ -1,32 +1,6 @@
 source("init.R")
 
-# Estructuras de datos =========================================================
 
-
-# tabla de personas con sus IDs
-# se cruzan las tablas de historia carcelaria (jail) y penal (prison) para enlazar
-# los id's de las personas con su nombre completo y fecha de nacimiento
-#     se filtran person_id != id, pues son personas que aparecen duplicadas (3 personas)
-#       con esos valores eliminados se puede copiar el id al person id pues son identicos
-#       entonces se tiene una tabla que enlaza unicamente a una persona con 1 id
-#       para asi cruzar esta tabla con tablas de arresto para graficar segun raza
-people_partial_id <- people %>%
-                      left_join(jailhistory %>%
-                                  distinct(first, last, dob, person_id) %>%
-                                  select("first", "last", "dob", "person_id"), 
-                                by=c("first", "last", "dob")) %>%
-                      left_join(prisonhistory %>%  distinct(first, last, dob, person_id) %>%
-                                  select("first", "last", "dob", "person_id"), 
-                                by=c("first", "last", "dob")) %>%
-                      mutate(person_id.x = ifelse(is.na(person_id.x), person_id.y, person_id.x)) %>%
-                      relocate(person_id = person_id.x) %>%
-                      select(-person_id.y) %>% 
-                      filter(person_id == id | is.na(person_id))
-
-# la gente que no tiene person_id es porque no estaban en jailhistory/prisonhistory
-people_not_sentenced <- people_partial_id %>%
-                          filter(is.na(person_id))
-        
 
 # Exploracion ==================================================================
 
