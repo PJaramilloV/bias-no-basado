@@ -386,8 +386,7 @@ if(PEOPLE){
   }
   if(CHARGE_DEGREE_X){ # degrees X ~ 18 rows
     people <- people %>% filter(!str_detect(c_charge_degree, 'XX')) %>% filter(c_charge_degree != '(X)')
-    people <- people %>% filter(!str_detect(r_charge_degree, 'XX')) %>% filter(r_charge_degree != '(X)')
-    people <- people %>% filter(!str_detect(vr_charge_degree, 'XX')) %>% filter(vr_charge_degree != '(X)')
+
   }
 if(CASEARREST){
   if(CHARGE_DEGREE_X){ # degrees X ~ 18 rows
@@ -510,6 +509,7 @@ if(RESTORE){
   rm(CHARGE)
   rm(CHARGE_DEGREE_X)
   rm(CHARGE_DESCR_NA)
+  rm(CHD_NUM)
   rm(DATE_T_NUM)
   rm(DUP_PPL)
   rm(eliminate_ca)
