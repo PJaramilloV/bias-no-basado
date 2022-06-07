@@ -12,6 +12,9 @@ RESTORE = FALSE    # (arroja warning del init, no afecta la limpieza)
 # Eliminate duplicated people
 DUP_PPL = TRUE
 
+# Charge degree to numeric scale (check charge_degree_penalties and charge_degree_scale)
+CHD_NUM = TRUE
+
 # Separate COMPAS by assessment
 C_BY_ASS = TRUE
 
@@ -36,8 +39,8 @@ PEOPLE_N_SENTCD = FALSE # gente no sentenciada en primer cargo criminal
 PEOPLE_DESCR_NA = TRUE  # gente sin descripción del primer cargo criminal
 
 # Tables to clean
-CASEARREST    = FALSE
-CHARGE        = FALSE
+CASEARREST    = TRUE
+CHARGE        = TRUE
 COMPAS        = FALSE
 JAILHISTORY   = FALSE
 PEOPLE        = TRUE
@@ -381,6 +384,59 @@ if(PEOPLE){
   if(PEOPLE_DESCR_NA){# people with no first crime charge description ~ 749 rows
     people <- people %>% filter(!is.na(c_charge_desc))
   }
+  if(CHARGE_DEGREE_X){ # degrees X ~ 18 rows
+    people <- people %>% filter(!str_detect(c_charge_degree, 'XX')) %>% filter(c_charge_degree != '(X)')
+    people <- people %>% filter(!str_detect(r_charge_degree, 'XX')) %>% filter(r_charge_degree != '(X)')
+    people <- people %>% filter(!str_detect(vr_charge_degree, 'XX')) %>% filter(vr_charge_degree != '(X)')
+  }
+if(CASEARREST){
+  if(CHARGE_DEGREE_X){ # degrees X ~ 18 rows
+    casearrest <- casearrest %>% filter(!str_detect(charge_degree, 'XX')) %>% filter(charge_degree != '(X)')
+  }
+ }
+}
+
+# ====== Numerize Charge Degree ======
+if(CHD_NUM && (CASEARREST || CHARGE || PEOPLE)){
+  charge_degree_ = c("(F1)", "(F5)", "(F6)", 
+                     "(F2)", "(F3)", "(F7)", 
+                     "(M1)", "(M2)", "(CT)", 
+                     "(M3)", "(MO3)", "(TCX)", "(TC4)", 
+                     "(NI0)", "(CO3)", "(0)")
+  num_charge_deg = c(1.0, 1.0, 1.0, 
+                     0.9, 0.85, 0.85,
+                     0.6, 0.55, 0.5, 
+                     0.4, 0.4, 0.35, 12, 
+                     0.07, 0.03, 0.0)
+  if(CASEARREST){
+    casearrest$charge_degree <- casearrest$charge_degree %>%
+      mapvalues( from=charge_degree_, to=num_charge_deg)
+    
+    casearrest <- casearrest %>% mutate(charge_degree = as.numeric(charge_degree)) 
+  }
+  if(CHARGE){
+    charge$charge_degree <- charge$charge_degree %>%
+      mapvalues( from=charge_degree_, to=num_charge_deg) 
+    
+    charge <- charge %>% mutate(charge_degree = as.numeric(charge_degree)) 
+  }
+  if(PEOPLE){
+    people$c_charge_degree <- people$c_charge_degree %>%
+      mapvalues( from=charge_degree_, to=num_charge_deg)
+    
+    people$r_charge_degree <- people$r_charge_degree %>%
+      mapvalues( from=charge_degree_, to=num_charge_deg) 
+    
+    people$vr_charge_degree <- people$vr_charge_degree %>%
+      mapvalues( from=charge_degree_, to=num_charge_deg) 
+    
+    people <- people %>% 
+        mutate(c_charge_degree = as.numeric(c_charge_degree)) %>%
+        mutate(r_charge_degree = as.numeric(r_charge_degree)) %>%
+        mutate(vr_charge_degree = as.numeric(vr_charge_degree))
+  }
+  rm(charge_degree_)
+  rm(num_charge_deg)
 }
 
 # ====== CLEAN TABLES ======
