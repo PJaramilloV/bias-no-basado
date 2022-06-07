@@ -8,9 +8,10 @@ library(tidyverse)
 library(utils)
 library(here)
 library(scales)
+library(plyr)
 
 # Setear working directory al directorio de este archivo
-setwd(here())
+#setwd(here())
 
 getwd()   # Ver que se seteo bien
 
