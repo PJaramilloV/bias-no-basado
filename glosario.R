@@ -132,7 +132,7 @@
 
 ## rec_supervision_level -------------------------------------------------------
 
-# nivel de supervision requerida ????
+# nivel de supervision recomendada ????
 
 
 ## rec_supervision_level_text --------------------------------------------------
@@ -207,11 +207,13 @@
 ## days_b_screening_arrest  ----------------------------------------------------
 
 # resta en dias: c_jail_in - compas_screening_date
+#               "cuantos dias pasaron desde el analsis hasta el encarcelamiento"
 
 
 ## c_days_from_compas ----------------------------------------------------------
 
-# resta en dias: compas_screening_date - c_offense_date ???????
+# resta en dias: compas_screening_date - (c_offense_date || c_arrest_date)
+#               "cuantos dias pasaron desde el crimen hasta el analisis"
 #
 # NOTA: prefijo "c_" denota informacion relacionada con el crimen que dio origen
 #         a la necesidad de analisar al sujeto con COMPAS
