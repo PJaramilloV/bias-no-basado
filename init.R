@@ -4,11 +4,12 @@
 # install.packages("here")
 library(RSQLite)
 library(rstudioapi)
+library(plyr)
 library(tidyverse)
 library(utils)
-library(here)
+#library(here)
 library(scales)
-library(plyr)
+
 
 # Setear working directory al directorio de este archivo
 #setwd(here())
