@@ -41,10 +41,10 @@ PEOPLE_DESCR_NA = TRUE  # gente sin descripción del primer cargo criminal
 # Tables to clean
 CASEARREST    = TRUE
 CHARGE        = TRUE
-COMPAS        = FALSE
-JAILHISTORY   = FALSE
+COMPAS        = TRUE
+JAILHISTORY   = TRUE
 PEOPLE        = TRUE
-PRISONHISTORY = FALSE
+PRISONHISTORY = TRUE
 
 
 ################## DO NOT TOUCH FROM HERE ON ################## 
@@ -405,7 +405,7 @@ if(CHD_NUM && (CASEARREST || CHARGE || PEOPLE)){
   num_charge_deg = c(1.0, 1.0, 1.0, 
                      0.9, 0.85, 0.85,
                      0.6, 0.55, 0.5, 
-                     0.4, 0.4, 0.35, 12, 
+                     0.4, 0.4, 0.35, 0.12, 
                      0.07, 0.03, 0.0)
   if(CASEARREST){
     casearrest$charge_degree <- casearrest$charge_degree %>%
