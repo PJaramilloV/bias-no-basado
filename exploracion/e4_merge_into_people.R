@@ -51,7 +51,7 @@ new_table <-  essentials %>%
                 relocate(id = person_id)
 
 
-# Limpiar tabla people
+# eliminar las siguientes columnas de tabla people
 eliminate_pe = c("first", "last", "age", "age_cat", "score_text", "violent_recid", 
                  "c_case_number", "c_charge_desc", "c_arrest_date")
 # columnas de fecha en string
@@ -82,9 +82,9 @@ people_joined_charge$c_charge_degree <- people_joined_charge$c_charge_degree %>%
 people_joined_charge <- people_joined_charge %>% mutate(c_charge_degree = as.numeric(c_charge_degree))
 
 
-# limpiar tablas intermedias
+# eliminar tablas intermedias
 rm(essentials, new_table, people_filtered)
-# limpiar variables y estructuras intermedias
+# eliminar variables y estructuras intermedias
 rm(attributes_vect, charge_degree_, num_charge_deg, eliminate_pe, dates_pe)
 
 #---- Join Compas a People -----
