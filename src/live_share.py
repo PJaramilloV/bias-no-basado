@@ -52,3 +52,5 @@ print('High score:', high_score)
 print('Score list:', score_list)
 
 
+dataset2["sex"] = np.where(dataset2["sex"]=='Male',1,0) 
+dataset2[dataset2.columns[1:-9]]
