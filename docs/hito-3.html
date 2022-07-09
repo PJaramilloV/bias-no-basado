@@ -14296,7 +14296,7 @@ a.anchor-link {
 <p>La idea general del proyecto es generar un modelo capaz de predecir la reincidencia de una persona, tratando de evitar que este modelo quede sesgado por la etnia. Asi como hacer un análisis del modelo COMPAS con respecto a su sesgo.</p>
 <h3 id="Pregunta-1">Pregunta 1<a class="anchor-link" href="#Pregunta-1">&#182;</a></h3><ul>
 <li>Se identificarán los atributos importantes usando matriz de correlación.</li>
-<li>Se entrenaran los modelos KNN y Decision Trees usando GridSearch para encontrar los mejores atributos de cada modelo para clasificar o predecir el atributo is_recid, el cual responde a si el individuo será reincidente en el futuro. </li>
+<li>Se entrenaran los modelos KMeans y Decision Trees usando GridSearch para encontrar los mejores atributos de cada modelo para clasificar o predecir el atributo is_recid, el cual responde a si el individuo será reincidente en el futuro. </li>
 <li>Se juzgará entorno a el parámetro f1 para determinar los mejores <em>hiper-parámetros</em>. Esto debido a que el f1 score mezcla los otros parámetros númericos, por lo que representa de mejor manera el rendimiento de un modelo.</li>
 <li>Se aplicará over y sub sampling a los datos para evitar desequilibrios.</li>
 <li>Dependiendo si el modelo resultante es lo suficientemente satisfactorio, se puede concluir con respecto a la pregunta.</li>
@@ -14318,7 +14318,7 @@ a.anchor-link {
 <li>Para identificar dichos patrones se recurrirá a una exploración de los datos sobre los clúster, similar a la hecha para la base de datos.</li>
 </ul>
 <h3 id="Pregunta-4">Pregunta 4<a class="anchor-link" href="#Pregunta-4">&#182;</a></h3><p>Se seguirá la misma metodología que para la pregunta 1, pero se clasificará para predecir el atributo race usando datos a los cuales COMPAS hubiese tenido acceso y el puntaje de compas para ver si es posible utilizar dicha información para predecir la etnia de un individuo.</p>
-<h3 id="Concluci&#243;n">Concluci&#243;n<a class="anchor-link" href="#Concluci&#243;n">&#182;</a></h3><p>Para concluir, se analizarán los resultados obtenidos a través de las preguntas, lo que permitirá evaluar la discriminación dentro de COMPAS.</p>
+<h3 id="Conclusi&#243;n">Conclusi&#243;n<a class="anchor-link" href="#Conclusi&#243;n">&#182;</a></h3><p>Para concluir, se analizarán los resultados obtenidos a través de las preguntas, lo que permitirá evaluar la discriminación dentro de COMPAS.</p>
 
 </div>
 </div>
@@ -18952,7 +18952,6 @@ weighted avg       0.26      0.28      0.26      3299
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Como se ve, la correlacion entre c_jail_in y c_jail_out es muy alta, por lo que podemos dejar compas_screening_date como representante de ambos.</span>
 <span class="c1"># Lo mismo pasa con min, med y avg degree, con lo cual podemos quedarnos con min</span>
-<span class="c1"># priors_count y degrees_total tambien, pero a pesar de tener una relación alta, son cosas distintas.</span>
 <span class="n">blind_recid_people</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="s1">&#39;c_jail_in&#39;</span><span class="p">,</span> <span class="s1">&#39;c_jail_out&#39;</span><span class="p">,</span> <span class="s1">&#39;med_degree&#39;</span><span class="p">,</span> <span class="s1">&#39;avg_degree&#39;</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">14</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
 <span class="n">sns</span><span class="o">.</span><span class="n">heatmap</span><span class="p">(</span><span class="n">blind_recid_people</span><span class="o">.</span><span class="n">corr</span><span class="p">(),</span> <span class="n">annot</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
