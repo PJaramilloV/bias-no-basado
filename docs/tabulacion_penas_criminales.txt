@@ -1,0 +1,152 @@
+(0):
+	need new license  	(fail to change address)
+	fine 75-400		(red light run)
+	vehicle impounded	(exp tag)
+	demerit points		(red light/careless drive)
+	community service	(careless drive)
+	driving school require	(careless drive/ fail to change address)
+	
+
+(CT): 
+	fine			(contempt to court) 		(depends on prev crime)
+	prison			(contempt to court) 		(depends on prev crime)
+	fine			(failure to appear on summons) 	(depends on prev crime)
+	prison	(<= 10y)	(failure to appear on summons) 	(depends on prev crime)
+
+
+(CO3):
+	fine 200-250		(drink on public)
+	community service	(drink on public)
+	-			(sleeping on public)
+	reg as sex offender	(urinating on public)
+	fine 25-1000		(disorderly conduct)
+	< 60 days jail		(prowling)[M2]
+	fine 150		(littering)
+
+(NI0):
+	fine 6-190		(improperly reg vessel)
+	fine 100		(Excess Speed Manatee Zone)
+	fine 25			(<18 yo smoke at/near school)
+	community service	(<18 yo smoke at/near school)
+	fine 500-5000		(failure to secure load)
+	fare 50-1000		(ride on Tri-rail without pay)
+
+	
+
+(TC4):
+	fine 1000-2000		(unlawful alcohol concentration)(of minor)
+	< 9 months jail		(unlawful alcohol concentration)(of minor)
+	fine 500-4000		(Drive Under Influence)
+	license suspended	(refuse breathalizyer)
+
+(TCX):
+	fine <500		(giving false account report / drive without license / 
+				 leave vehicle unattended)
+	6 months prison		(giving false account report / drive without license[jail])
+	fine 500-4000		(DUI)
+	fine 500-5000		(failure to secure load)
+	fine < 5000		(flee /elude police)
+	2 years jail		(flee /elude police)
+	fine < 1000		(reckless drive)
+	90 days jail		(reckless drive)
+
+
+
+(M3):
+	1 year jail		(possession of regulated substance without permit)
+	fine < 2000		(possession of regulated substance without permit/battery)
+	reg as sex offender	(expose genitals pub space)
+	fine 20-250		(violate curfew)
+	fine 200-1000		(sell tobacco to minor)
+	90 day jail		(sell tobacco to minor)
+	fine < 5000		(carry firearm open)
+	60 days jail		(gambling / prostitution)
+	fine 500		(gambling / prostitution / begging)
+	1 year prison 		(obstruction of justice)
+	6 months, 1 year jail	(solicit prostitution)
+	60 days prison		(begging)
+
+(M2):
+	< 5 year prison		(battery on police officer / aggrav assault )
+	fine < 5000		(battery on police officer / possession <20g cannabis
+				 / aggrav assault )
+	< 1 year prison 	(possession <20g cannabis / possession oxycodone)
+	fine < 1000		(possession oxycodone)
+	60 days jail		(leave child unattended >15min / bag >6 lobsters)
+	fine 500		(bag >6 lobsters / giving false account report )
+	15 years prison		(burglary occupied property)		
+	fine < 10000		(burglary occupied property)
+	
+(M1):
+	7 < years prison < 40 	(arson with injury to person)
+	[M2 punishment]		(unlawful use of badge)
+	5 year prison		(possession meth)
+	fine < 5000		(possession meth / welfare fraud >$200 
+				 / possession buprenorphine)
+	5 year prison		(welfare fraud >$200)
+	1 year jail/prison	(sell of drug paraphernalia / public discharge of gun 
+				 / Possession Of Buprenorphine 
+				 / possession of gun with serial number removed)
+	fine < 4000		(sell of drug paraphernalia)
+	fine < 1000		(public discharge of gun
+				 / possession of gun with serial number removed)
+	3 year prison		(harass witness)
+
+(F7):
+	15 year prison		(sexual battery/ burglary assault / traffick cocaine)
+	fine 10000		(sexual battery/ armed kidnapping)
+	life prison		(armed kidnapping)
+	fine 250k		(traffick cocaine)
+	fine < 6000 		(domestic violence)
+
+(F6):
+	life prison (no parole)	(1st deg murder)
+
+(F5):
+	life prison (sexual battery by >18yo on <11yo / armed sexual battery)
+
+(F3):
+	5 year prison 		(possession of testosterone / tamper with witness /
+				 impersonating police / lewd molestation)
+	15 year prison		(deliver cocaine / Grand theft 2nd degree)
+	fine 10000		(deliver cocaine)
+	fine 5000		(tamper with witness / impersonating police / lewd molestation)
+
+(F2):
+	life prison		(robbery w deadly weapon)
+	15 year prison		(vehicular homicide)
+	5 year prison		(dui w serious injure)
+	fine 5000		(dui w serious injure)
+	30 year prison		(consp organized fraud scheme / aggrav child abuse)
+	fine 10000		(consp organized fraud scheme / aggrav child abuse)
+
+(F1):
+	15 year prison		(Robbery (strong Arm/mask)/ aggravated assault on elderly/disabled)
+	30 year prison		(Grand Theft in the 1st Degree/ Medicaid Fraud/
+				 Human traffick)
+	life prison		(Kidnapping / sexual battery by <17yo on <11yo/
+				 carjacking with firearm)
+	fine 300000		(Medicaid Fraud)
+	
+
+
+
+
+
+Puntajes obtenidos por consenso grupal
+---------
+(F1)(F5)(F6)  	- 1.0
+(F2)		- 0.9
+(F3)(F7)	- 0.85
+(M1)		- 0.6
+(M2)		- 0.55
+(CT)		- 0.5
+(M3)		- 0.4
+(TCX)		- 0.35
+(TC4)		- 0.12
+(NI0)		- 0.07
+(CO3)		- 0.03
+(0)		- 0.0
+
+
+
